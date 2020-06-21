@@ -15,8 +15,8 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#ifndef LITTLENAVCONNECT_OPTIONSDIALOG_H
-#define LITTLENAVCONNECT_OPTIONSDIALOG_H
+#ifndef LITTLEFGCONNECT_OPTIONSDIALOG_H
+#define LITTLEFGCONNECT_OPTIONSDIALOG_H
 
 #include <QDialog>
 
@@ -49,4 +49,4 @@ private:
   Ui::OptionsDialog *ui;
 };
 
-#endif // LITTLENAVCONNECT_OPTIONSDIALOG_H
+#endif // LITTLEFGCONNECT_OPTIONSDIALOG_H

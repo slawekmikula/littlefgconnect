@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>349</width>
-    <height>190</height>
+    <height>162</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,22 +16,6 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="2" column="0" colspan="2">
-      <widget class="QCheckBox" name="checkBoxFetchAiAircraft">
-       <property name="toolTip">
-        <string>Deselect to disable fetching and transmission of AI or multiplayer aircraft</string>
-       </property>
-       <property name="statusTip">
-        <string>Deselect to disable fetching and transmission of AI or multiplayer aircraft</string>
-       </property>
-       <property name="text">
-        <string>Fetch AI or multiplayer &amp;aircraft</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="1">
       <widget class="QSpinBox" name="spinBoxOptionsUpdateRate">
        <property name="toolTip">
@@ -58,17 +42,22 @@ Little Navconnect fetches data from Flight Simulator and sends it to all clients
        </property>
       </widget>
      </item>
-     <item row="4" column="0" colspan="2">
-      <widget class="QCheckBox" name="checkBoxHideHostname">
+     <item row="2" column="0" colspan="2">
+      <widget class="QCheckBox" name="checkBoxFetchAiAircraft">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="toolTip">
-        <string>Select this if you do not want to reveal your hostname or IP address in the log window.
-This can be useful for streaming sessions where others can see your desktop.</string>
+        <string>Deselect to disable fetching and transmission of AI or multiplayer aircraft</string>
        </property>
        <property name="statusTip">
-        <string>Select this if you do not want to reveal your hostname or IP address in the log window.\nThis can be useful for streaming sessions where others can see your desktop.</string>
+        <string>Deselect to disable fetching and transmission of AI or multiplayer aircraft</string>
        </property>
        <property name="text">
-        <string>&amp;Hide hostname and IP in log window</string>
+        <string>Fetch AI or multiplayer &amp;aircraft</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -98,6 +87,20 @@ This can be useful for streaming sessions where others can see your desktop.</st
        </property>
       </widget>
      </item>
+     <item row="3" column="0" colspan="2">
+      <widget class="QCheckBox" name="checkBoxHideHostname">
+       <property name="toolTip">
+        <string>Select this if you do not want to reveal your hostname or IP address in the log window.
+This can be useful for streaming sessions where others can see your desktop.</string>
+       </property>
+       <property name="statusTip">
+        <string>Select this if you do not want to reveal your hostname or IP address in the log window.\nThis can be useful for streaming sessions where others can see your desktop.</string>
+       </property>
+       <property name="text">
+        <string>&amp;Hide hostname and IP in log window</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="1">
       <widget class="QSpinBox" name="spinBoxOptionsPort">
        <property name="toolTip">
@@ -115,23 +118,7 @@ you get an error message like &quot;The bound address is already in use&quot;.</
         <number>65535</number>
        </property>
        <property name="value">
-        <number>51968</number>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0" colspan="2">
-      <widget class="QCheckBox" name="checkBoxFetchAiShip">
-       <property name="toolTip">
-        <string>Deselect to disable fetching and transmission of AI or multiplayer ships. This option does not apply to X-Plane.</string>
-       </property>
-       <property name="statusTip">
-        <string>Deselect to disable fetching and transmission of AI or multiplayer ships. This option does not apply to X-Plane.</string>
-       </property>
-       <property name="text">
-        <string>Fetch AI or multiplayer &amp;ships (not X-Plane)</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
+        <number>7755</number>
        </property>
       </widget>
      </item>

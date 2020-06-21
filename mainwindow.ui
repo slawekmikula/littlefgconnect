@@ -42,7 +42,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -93,7 +93,7 @@
   </widget>
   <action name="actionQuit">
    <property name="icon">
-    <iconset resource="littlenavconnect.qrc">
+    <iconset>
      <normaloff>:/littlenavconnect/resources/icons/application-exit.svg</normaloff>:/littlenavconnect/resources/icons/application-exit.svg</iconset>
    </property>
    <property name="text">
@@ -105,16 +105,16 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="littlenavconnect.qrc">
+    <iconset>
      <normaloff>:/littlenavconnect/resources/icons/navconnect.svg</normaloff>:/littlenavconnect/resources/icons/navconnect.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;About Little Navconnect</string>
+    <string>&amp;About Little FGconnect</string>
    </property>
   </action>
   <action name="actionAboutQt">
    <property name="icon">
-    <iconset resource="littlenavconnect.qrc">
+    <iconset>
      <normaloff>:/littlenavconnect/resources/icons/qticon.png</normaloff>:/littlenavconnect/resources/icons/qticon.png</iconset>
    </property>
    <property name="text">
@@ -123,7 +123,7 @@
   </action>
   <action name="actionContents">
    <property name="icon">
-    <iconset resource="littlenavconnect.qrc">
+    <iconset>
      <normaloff>:/littlenavconnect/resources/icons/help.svg</normaloff>:/littlenavconnect/resources/icons/help.svg</iconset>
    </property>
    <property name="text">
@@ -137,7 +137,7 @@
   </action>
   <action name="actionOptions">
    <property name="icon">
-    <iconset resource="littlenavconnect.qrc">
+    <iconset>
      <normaloff>:/littlenavconnect/resources/icons/settings.svg</normaloff>:/littlenavconnect/resources/icons/settings.svg</iconset>
    </property>
    <property name="text">
@@ -167,7 +167,7 @@
   </action>
   <action name="actionContentsOffline">
    <property name="icon">
-    <iconset resource="littlenavconnect.qrc">
+    <iconset>
      <normaloff>:/littlenavconnect/resources/icons/help.svg</normaloff>:/littlenavconnect/resources/icons/help.svg</iconset>
    </property>
    <property name="text">
@@ -207,8 +207,6 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="littlenavconnect.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

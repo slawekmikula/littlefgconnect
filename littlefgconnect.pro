@@ -1,5 +1,6 @@
 #*****************************************************************************
-# Copyright 2015-2019 Alexander Barthel alex@littlenavmap.org
+# Copyright 2020 Alexander Barthel alex@littlenavmap.org
+#                Slawek Mikula slawek.mikula@gmail.com
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,10 +39,6 @@
 # Uses "git" on macOS and Linux as default if not set.
 # Example: "C:\Git\bin\git"
 #
-# ATOOLS_SIMCONNECT_PATH
-# Optional. Path to SimConnect SDK. SimConnect support will be omitted in build if not set.
-# Example: "C:\Program Files (x86)\Microsoft Games\Microsoft Flight Simulator X SDK\SDK\Core Utilities Kit\SimConnect SDK"
-#
 # DEPLOY_BASE
 # Optional. Target folder for "make deploy". Default is "../deploy" plus project name ($$TARGET_NAME).
 #
@@ -60,7 +57,7 @@ CONFIG -= debug_and_release debug_and_release_target
 TARGET = littlefgconnect
 TEMPLATE = app
 
-TARGET_NAME=Little Fgconnect
+TARGET_NAME=Little FGconnect
 
 # =======================================================================
 # Copy environment variables into qmake variables
@@ -69,7 +66,6 @@ ATOOLS_INC_PATH=$$(ATOOLS_INC_PATH)
 ATOOLS_LIB_PATH=$$(ATOOLS_LIB_PATH)
 OPENSSL_PATH=$$(OPENSSL_PATH)
 GIT_PATH=$$(ATOOLS_GIT_PATH)
-SIMCONNECT_PATH=$$(ATOOLS_SIMCONNECT_PATH)
 DEPLOY_BASE=$$(DEPLOY_BASE)
 QUIET=$$(ATOOLS_QUIET)
 
@@ -163,30 +159,33 @@ message(-----------------------------------)
 
 SOURCES +=\
   src/constants.cpp \
-  src/main.cpp \
+  src/dataref.cpp \
+  src/main.cpp \  
+  src/main1.cpp \
   src/mainwindow.cpp \
-  src/optionsdialog.cpp
+  src/optionsdialog.cpp \
+  src/sharedmemorywriter.cpp \
+  src/xpconnect.cpp
 
 HEADERS  += \
   src/constants.h \
+  src/dataref.h \
+  src/littlexpconnect_global.h \
   src/mainwindow.h \
-  src/optionsdialog.h
+  src/optionsdialog.h \
+  src/sharedmemorywriter.h \
+  src/xpconnect.h
 
 FORMS    += mainwindow.ui \
   optionsdialog.ui
 
 RESOURCES += \
-  littlenavconnect.qrc
+  littlefgconnect.qrc
 
-ICON = resources/icons/littlenavconnect.icns
+ICON = resources/icons/littlefgconnect.icns
 
 TRANSLATIONS = \
-  littlenavconnect_fr.ts \
-  littlenavconnect_it.ts \
-  littlenavconnect_nl.ts \
-  littlenavconnect_de.ts \
-  littlenavconnect_es.ts \
-  littlenavconnect_pt_BR.ts
+  littlefgconnect_pl.ts
 
 OTHER_FILES += \
   $$files(desktop/*, true) \
@@ -210,15 +209,15 @@ unix:!macx {
   copydata.commands += mkdir -p $$OUT_PWD/translations &&
   copydata.commands += cp -avfu $$PWD/*.qm $$OUT_PWD/translations &&
   copydata.commands += cp -avfu $$ATOOLS_INC_PATH/../*.qm $$OUT_PWD/translations &&
-  copydata.commands += cp -vf $$PWD/desktop/littlenavconnect*.sh $$OUT_PWD &&
-  copydata.commands += chmod -v a+x $$OUT_PWD/littlenavconnect*.sh
+  copydata.commands += cp -vf $$PWD/desktop/littlefgconnect*.sh $$OUT_PWD &&
+  copydata.commands += chmod -v a+x $$OUT_PWD/littlefgconnect*.sh
 }
 
 # Mac OS X - Copy help and Marble plugins and data
 macx {
-  copydata.commands += cp -Rv $$PWD/help $$OUT_PWD/littlenavconnect.app/Contents/MacOS &&
-  copydata.commands += cp -vf $$PWD/*.qm $$OUT_PWD/littlenavconnect.app/Contents/MacOS &&
-  copydata.commands += cp -vf $$ATOOLS_INC_PATH/../*.qm $$OUT_PWD/littlenavconnect.app/Contents/MacOS
+  copydata.commands += cp -Rv $$PWD/help $$OUT_PWD/littlefgconnect.app/Contents/MacOS &&
+  copydata.commands += cp -vf $$PWD/*.qm $$OUT_PWD/littlefgconnect.app/Contents/MacOS &&
+  copydata.commands += cp -vf $$ATOOLS_INC_PATH/../*.qm $$OUT_PWD/littlefgconnect.app/Contents/MacOS
 }
 
 # =====================================================================
@@ -235,15 +234,15 @@ unix:!macx {
   deploy.commands += mkdir -pv $$DEPLOY_DIR_LIB/imageformats &&
   deploy.commands += mkdir -pv $$DEPLOY_DIR_LIB/platforms &&
   deploy.commands += mkdir -pv $$DEPLOY_DIR_LIB/platformthemes &&
-  deploy.commands += cp -Rvf $$OUT_PWD/littlenavconnect $$DEPLOY_DIR &&
+  deploy.commands += cp -Rvf $$OUT_PWD/littlefgconnect $$DEPLOY_DIR &&
   deploy.commands += cp -Rvf $$OUT_PWD/help $$DEPLOY_DIR &&
   deploy.commands += cp -Rvf $$OUT_PWD/translations $$DEPLOY_DIR &&
   deploy.commands += cp -vf $$PWD/desktop/qt.conf $$DEPLOY_DIR &&
   deploy.commands += cp -vf $$PWD/CHANGELOG.txt $$DEPLOY_DIR &&
   deploy.commands += cp -vf $$PWD/README.txt $$DEPLOY_DIR &&
   deploy.commands += cp -vf $$PWD/LICENSE.txt $$DEPLOY_DIR &&
-  deploy.commands += cp -vf $$PWD/resources/icons/navconnect.svg $$DEPLOY_DIR/littlenavconnect.svg &&
-  deploy.commands += cp -vf \"$$PWD/desktop/Little Navconnect.desktop\" $$DEPLOY_DIR &&
+  deploy.commands += cp -vf $$PWD/resources/icons/fgconnect.svg $$DEPLOY_DIR/littlefgconnect.svg &&
+  deploy.commands += cp -vf \"$$PWD/desktop/Little FGconnect.desktop\" $$DEPLOY_DIR &&
   exists(/usr/lib/x86_64-linux-gnu/libssl.so) : deploy.commands += cp -vfaL /usr/lib/x86_64-linux-gnu/libssl.so $${DEPLOY_DIR_LIB}/libssl.so &&
   exists(/usr/lib/x86_64-linux-gnu/libcrypto.so) : deploy.commands += cp -vfaL /usr/lib/x86_64-linux-gnu/libcrypto.so $${DEPLOY_DIR_LIB}/libcrypto.so &&
   deploy.commands += cp -vfa $$[QT_INSTALL_TRANSLATIONS]/qt_??.qm  $$DEPLOY_DIR/translations &&
@@ -280,32 +279,32 @@ macx {
   DEPLOY_DIR=\"$$DEPLOY_BASE/\"
 
   deploy.commands = rm -Rfv $$DEPLOY_APP &&
-  deploy.commands += macdeployqt littlenavconnect.app -always-overwrite &&
-  deploy.commands += cp -rfv $$OUT_PWD/littlenavconnect.app $$DEPLOY_APP &&
+  deploy.commands += macdeployqt littlefgconnect.app -always-overwrite &&
+  deploy.commands += cp -rfv $$OUT_PWD/littlefgconnect.app $$DEPLOY_APP &&
   deploy.commands += cp -fv $$[QT_INSTALL_TRANSLATIONS]/qt_??.qm  $$DEPLOY_APP/Contents/MacOS &&
   deploy.commands += cp -fv $$[QT_INSTALL_TRANSLATIONS]/qt_??_??.qm  $$DEPLOY_APP/Contents/MacOS &&
   deploy.commands += cp -fv $$[QT_INSTALL_TRANSLATIONS]/qtbase*.qm  $$DEPLOY_APP/Contents/MacOS &&
   deploy.commands += cp -fv $$PWD/build/mac/Info.plist $$DEPLOY_APP/Contents &&
   deploy.commands += cp -fv $$PWD/LICENSE.txt $$DEPLOY_DIR &&
-  deploy.commands += cp -fv $$PWD/README.txt $$DEPLOY_DIR/README-LittleNavconnect.txt &&
-  deploy.commands += cp -fv $$PWD/CHANGELOG.txt $$DEPLOY_DIR/CHANGELOG-LittleNavconnect.txt
+  deploy.commands += cp -fv $$PWD/README.txt $$DEPLOY_DIR/README-LittleFGconnect.txt &&
+  deploy.commands += cp -fv $$PWD/CHANGELOG.txt $$DEPLOY_DIR/CHANGELOG-LittleFGconnect.txt
 }
 
 
 # Windows specific deploy target
 win32 {
   defineReplace(p){return ($$shell_quote($$shell_path($$1)))}
-  RC_ICONS = resources/icons/navconnect.ico
+  RC_ICONS = resources/icons/fgconnect.ico
 
   deploy.commands = rmdir /s /q $$p($$DEPLOY_BASE/$$TARGET_NAME) &
   deploy.commands += mkdir $$p($$DEPLOY_BASE/$$TARGET_NAME/translations) &&
-  deploy.commands += xcopy $$p($$OUT_PWD/littlenavconnect.exe) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
+  deploy.commands += xcopy $$p($$OUT_PWD/littlefgconnect.exe) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$p($$PWD/CHANGELOG.txt) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$p($$PWD/README.txt) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$p($$PWD/LICENSE.txt) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$p($$PWD/*.qm) $$p($$DEPLOY_BASE/$$TARGET_NAME/translations) &&
   deploy.commands += xcopy $$p($$ATOOLS_INC_PATH/../*.qm) $$p($$DEPLOY_BASE/$$TARGET_NAME/translations) &&
-  deploy.commands += xcopy $$p($$PWD/littlenavconnect.exe.simconnect) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
+  deploy.commands += xcopy $$p($$PWD/littlefgconnect.exe.simconnect) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$OPENSSL_PATH\libcrypto-1_1.dll $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$OPENSSL_PATH\libssl-1_1.dll $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$p($$[QT_INSTALL_BINS]/libgcc*.dll) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&

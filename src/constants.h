@@ -15,8 +15,8 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#ifndef LITTLENAVCONNECT_CONSTANTS_H
-#define LITTLENAVCONNECT_CONSTANTS_H
+#ifndef LITTLEFGCONNECT_CONSTANTS_H
+#define LITTLEFGCONNECT_CONSTANTS_H
 
 #include <QLatin1Literal>
 
@@ -36,4 +36,4 @@ const QLatin1Literal SETTINGS_OPTIONS_LANGUAGE("Options/Language");
 const QLatin1Literal SETTINGS_OPTIONS_SIMULATOR_FSX("Options/Simulator");
 } // namespace lnc
 
-#endif // LITTLENAVCONNECT_CONSTANTS_H
+#endif // LITTLEFGCONNECT_CONSTANTS_H

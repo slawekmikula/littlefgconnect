@@ -15,8 +15,8 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#ifndef LITTLENAVCONNECT_MAINWINDOW_H
-#define LITTLENAVCONNECT_MAINWINDOW_H
+#ifndef LITTLEFGCONNECT_MAINWINDOW_H
+#define LITTLEFGCONNECT_MAINWINDOW_H
 
 #include <QMainWindow>
 
@@ -113,4 +113,4 @@ private:
   QString aboutMessage;
 };
 
-#endif // LITTLENAVCONNECT_MAINWINDOW_H
+#endif // LITTLEFGCONNECT_MAINWINDOW_H

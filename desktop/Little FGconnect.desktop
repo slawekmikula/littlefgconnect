@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=YOUR_PATH_TO_LITTLEFGCONNECT/littlefgconnect
+Path=YOUR_PATH_TO_LITTLEFGCONNECT/
+Name=Little FGconnect
+GenericName=Little FGconnect
+Icon=YOUR_PATH_TO_LITTLENAVMAP/littlefgconnect.svg
+Terminal=false
+Categories=Qt;Utility;Geography;Map;
+
