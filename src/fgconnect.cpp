@@ -44,7 +44,6 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
 {
     Q_UNUSED(fetchAi);
 
-    //QString retval = "2019-12-26T09:27:49;7200;3.564416;763.517456;2.513103;150.000000;26.924566;30.476448;39.534885;238.000000;5.453534;28949.210938;354.546478;347.994141;Piper PA28-161 Warrior II (160hp);PA28-161-160;50.0742416382;19.8020534515;347.994141;342.540619;0.000000;229.615570;0.004633;0.004734;0.000007;-12.254924";
     QString retval = simData;
     QStringList pieces = retval.split(";");
 
@@ -120,8 +119,6 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
 
     atools::fs::sc::SimConnectUserAircraft& userAircraft = data.userAircraft;
 
-    qDebug() << Q_FUNC_INFO << "flightModel ";
-
     userAircraft.position = Pos(longitude, latitude, altitudeAboveGroundFt);
     if(!userAircraft.position.isValid() || userAircraft.position.isNull()) {
       return false;
@@ -148,7 +145,7 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
 
     // Weight
     // userAircraft.airplaneMaxGrossWeightLbs
-    if (flightModel == "jsb") {
+    if (QString::compare(flightModel, "\"jsb\"", Qt::CaseInsensitive)) {
         userAircraft.airplaneTotalWeightLbs = airplaneTotalWeightLbsJsbsim;
         // simplification - does not account people & luggage weight
         userAircraft.airplaneEmptyWeightLbs = airplaneTotalWeightLbsJsbsim - fuelTotalWeightLbs;
