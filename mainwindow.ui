@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Little Navconnect</string>
+   <string>Little Fgconnect</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -125,8 +125,8 @@
   </action>
   <action name="actionContents">
    <property name="icon">
-    <iconset>
-     <normaloff>:/littlenavconnect/resources/icons/help.svg</normaloff>:/littlenavconnect/resources/icons/help.svg</iconset>
+    <iconset resource="littlefgconnect.qrc">
+     <normaloff>:/littlefgconnect/resources/icons/help.svg</normaloff>:/littlefgconnect/resources/icons/help.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Contents (Online)</string>
@@ -139,8 +139,8 @@
   </action>
   <action name="actionOptions">
    <property name="icon">
-    <iconset>
-     <normaloff>:/littlenavconnect/resources/icons/settings.svg</normaloff>:/littlenavconnect/resources/icons/settings.svg</iconset>
+    <iconset resource="littlefgconnect.qrc">
+     <normaloff>:/littlefgconnect/resources/icons/settings.svg</normaloff>:/littlefgconnect/resources/icons/settings.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Options</string>
@@ -157,10 +157,14 @@
   </action>
   <action name="actionConnectFlightgear">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="checked">
     <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="littlefgconnect.qrc">
+     <normaloff>:/littlefgconnect/resources/icons/fgconnect.svg</normaloff>:/littlefgconnect/resources/icons/fgconnect.svg</iconset>
    </property>
    <property name="text">
     <string>Start connection</string>
@@ -174,6 +178,8 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="littlefgconnect.qrc"/>
+ </resources>
  <connections/>
 </ui>

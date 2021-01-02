@@ -98,7 +98,6 @@ private:
   // Runs in background and fetches data from simulator - signals are sent to NavServerWorker threads
   atools::fs::sc::DataReaderThread *dataReader = nullptr;
   atools::fs::sc::XpConnectHandler *xpConnectHandler = nullptr;
-  QActionGroup *simulatorActionGroup = nullptr;
 
   // FlightGear communication
   QUdpSocket* udpSocket = nullptr;

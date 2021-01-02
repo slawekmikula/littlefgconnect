@@ -60,13 +60,13 @@ MainWindow::MainWindow()
 
   aboutMessage =
     QObject::tr("<p>is the FlightGear connection agent for Little Navmap.</p>"
-                  "<p>This software is licensed under "
-                    "<a href=\"http://www.gnu.org/licenses/gpl-3.0\">GPL3</a> or any later version.</p>"
-                      "<p>The source code for this application is available at "
-                        "<a href=\"https://github.com/albar965\">Github</a>.</p>"
-                          "<p>More about my projects at "
-                            "<a href=\"https://www.littlenavmap.org\">www.littlenavmap.org</a>.</p>"
-                              "<p><b>Copyright 2015-2020 Alexander Barthel</b></p>");
+                "<p>This software is licensed under "
+                "<a href=\"http://www.gnu.org/licenses/gpl-3.0\">GPL3</a> or any later version.</p>"
+                "<p>The source code for this application is available at "
+                "<a href=\"https://github.com/albar965\">Github</a>.</p>"
+                "<p>More about my projects at "
+                "<a href=\"https://www.littlenavmap.org\">www.littlenavmap.org</a>.</p>"
+                "<p><b>Copyright 2015-2020 Alexander Barthel, Slawek Mikula</b></p>");
 
   // Show a dialog on fatal log events like asserts
   atools::logging::LoggingGuiAbortHandler::setGuiAbortFunction(this);
@@ -106,12 +106,7 @@ MainWindow::MainWindow()
   // Create help handler for managing the Help menu items
   helpHandler = new atools::gui::HelpHandler(this, aboutMessage, GIT_REVISION);
 
-  // Create a group to turn the simulator actions into mutual exclusive ones
-  simulatorActionGroup = new QActionGroup(ui->menuTools);
-  simulatorActionGroup->addAction(ui->actionConnectFlightgear);
-
   connect(ui->actionConnectFlightgear, &QAction::triggered, this, &MainWindow::startStopConnection);
-
   connect(ui->actionQuit, &QAction::triggered, this, &QMainWindow::close);
   connect(ui->actionResetMessages, &QAction::triggered, this, &MainWindow::resetMessages);
   connect(ui->actionOptions, &QAction::triggered, this, &MainWindow::options);
@@ -147,9 +142,6 @@ MainWindow::~MainWindow()
   delete helpHandler;
   qDebug() << Q_FUNC_INFO << "help handler deleted";
 
-  delete simulatorActionGroup;
-  qDebug() << Q_FUNC_INFO << "fsActionGroup deleted";
-
   delete ui;
   qDebug() << Q_FUNC_INFO << "ui deleted";
 
@@ -176,20 +168,16 @@ void MainWindow::options()
   Settings& settings = Settings::instance();
   unsigned int updateRateMs = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_UPDATE_RATE, 500).toUInt();
   int port = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_DEFAULT_PORT, 7755).toInt();
-  bool hideHostname = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_HIDE_HOSTNAME, false).toBool();
-
   bool fetchAiAircraft = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, true).toBool();
 
   dialog.setUpdateRate(updateRateMs);
   dialog.setPort(port);
-  dialog.setHideHostname(hideHostname);
   dialog.setFetchAiAircraft(fetchAiAircraft);
 
   int result = dialog.exec();
 
   if(result == QDialog::Accepted)
   {
-    settings.setValue(lfgc::SETTINGS_OPTIONS_HIDE_HOSTNAME, static_cast<int>(dialog.isHideHostname()));
     settings.setValue(lfgc::SETTINGS_OPTIONS_UPDATE_RATE, static_cast<int>(dialog.getUpdateRate()));
     settings.setValue(lfgc::SETTINGS_OPTIONS_DEFAULT_PORT, dialog.getPort());
     settings.setValue(lfgc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, dialog.isFetchAiAircraft());
@@ -197,9 +185,9 @@ void MainWindow::options()
     settings.syncSettings();
 
     atools::fs::sc::Options options = atools::fs::sc::NO_OPTION;
-    if(dialog.isFetchAiAircraft())
+    if(dialog.isFetchAiAircraft()) {
       options |= atools::fs::sc::FETCH_AI_AIRCRAFT;
-
+    }
     dataReader->setSimconnectOptions(options);
 
     if(dialog.getUpdateRate() != updateRateMs)
@@ -208,11 +196,6 @@ void MainWindow::options()
       dataReader->terminateThread();
       dataReader->setUpdateRate(dialog.getUpdateRate());
       dataReader->start();
-    }
-
-    if(dialog.getPort() != port)
-    {
-      // Restart navserver on port change
     }
   }
 }
@@ -305,6 +288,8 @@ void MainWindow::startStopConnection()
 
         thread = new SharedMemoryWriter();
         thread->start();
+
+        qInfo(atools::fs::ns::gui).noquote().nospace() << "Started FlightGear connection slot. Waiting for FlightGear data.";
       }
     } else {
       if (udpSocket->state() == udpSocket->BoundState) {
@@ -318,6 +303,8 @@ void MainWindow::startStopConnection()
         udpSocket->close();
         delete udpSocket;
         udpSocket = nullptr;
+
+        qInfo(atools::fs::ns::gui).noquote().nospace() << "Closed FlightGear connection slot.";
       }
     }
 }
