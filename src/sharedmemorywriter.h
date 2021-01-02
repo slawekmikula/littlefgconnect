@@ -58,7 +58,7 @@ private:
   QMutex waitMutex;
   QWaitCondition waitCondition;
 
-  lfgc::FgConnect *fgConnect = nullptr;
+  xpc::XpConnect *fgConnect = nullptr;
 
   /* Shared memory for local communication */
   QSharedMemory sharedMemory;

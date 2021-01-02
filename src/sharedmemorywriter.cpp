@@ -26,7 +26,7 @@
 SharedMemoryWriter::SharedMemoryWriter()
 {
   qDebug() << Q_FUNC_INFO;
-  fgConnect = new lfgc::FgConnect();
+  fgConnect = new xpc::XpConnect();
 }
 
 SharedMemoryWriter::~SharedMemoryWriter()

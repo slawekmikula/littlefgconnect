@@ -35,12 +35,10 @@ public:
 
   int getPort() const;
   unsigned int getUpdateRate() const;
-  bool isHideHostname() const;
   bool isFetchAiAircraft() const;
 
   void setPort(int port);
   void setUpdateRate(unsigned int ms);
-  void setHideHostname(bool hide);
   void setFetchAiAircraft(bool value);
 
 private:

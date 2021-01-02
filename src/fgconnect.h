@@ -30,16 +30,16 @@ class SimConnectAircraft;
 }
 }
 
-namespace lfgc {
+namespace xpc {
 
 /*
  * Class that has full access to SimConnectData.
  */
-class FgConnect
+class XpConnect
 {
 public:
-  FgConnect();
-  ~FgConnect();
+  XpConnect();
+  ~XpConnect();
 
   /* Fill SimConnectData from FlightGear datarefs. Returns true if data was found */
   bool fillSimConnectData(QString simData, atools::fs::sc::SimConnectData& data, bool fetchAi);

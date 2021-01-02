@@ -28,19 +28,19 @@ using atools::geo::meterToNm;
 using atools::roundToInt;
 using atools::geo::Pos;
 
-namespace lfgc {
+namespace xpc {
 
-FgConnect::FgConnect()
+XpConnect::XpConnect()
 {
   qDebug() << Q_FUNC_INFO;
 }
 
-FgConnect::~FgConnect()
+XpConnect::~XpConnect()
 {
   qDebug() << Q_FUNC_INFO;
 }
 
-bool FgConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectData& data, bool fetchAi)
+bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectData& data, bool fetchAi)
 {
     Q_UNUSED(fetchAi);
 
@@ -71,10 +71,16 @@ bool FgConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     float ambientTemperatureCelsius = pieces.at(index++).toFloat();
     //      <name>seaLevelPressureMbar = 0.f - inhg</name>
     float seaLevelPressureInhg = pieces.at(index++).toFloat();
+    //      <name>airplaneTotalWeightLbs
+    float airplaneTotalWeightLbsYasim = pieces.at(index++).toFloat();
+    //      <name>airplaneTotalWeightLbs
+    float airplaneTotalWeightLbsJsbsim = pieces.at(index++).toFloat();
     //      <name>fuelTotalQuantityGallons = 0.f</name>
     float fuelTotalQuantityGallons = pieces.at(index++).toFloat();
     //      <name>fuelTotalWeightLbs = 0.f</name>
     float fuelTotalWeightLbs = pieces.at(index++).toFloat();
+    //      <name>fuelFlowPPH (in PPS)
+    float fuelFlowPPS = pieces.at(index++).toFloat();
     //      <name>magVarDeg = 0.f</name>
     float magVarDeg = pieces.at(index++).toFloat();
     //      <name>ambientVisibilityMeter = 0.f;f</name>
@@ -109,10 +115,12 @@ bool FgConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     float machSpeed = pieces.at(index++).toFloat();
     //      <name>verticalSpeedFeetPerMin = 0.f</name>
     float verticalSpeedFeetPerMin = pieces.at(index++).toFloat();
+    //      flightModel Type (jsb or yasim)
+    QString flightModel = pieces.at(index++);
 
     atools::fs::sc::SimConnectUserAircraft& userAircraft = data.userAircraft;
 
-    qDebug() << Q_FUNC_INFO << "long: " << longitude << " lat: " << latitude;
+    qDebug() << Q_FUNC_INFO << "flightModel ";
 
     userAircraft.position = Pos(longitude, latitude, altitudeAboveGroundFt);
     if(!userAircraft.position.isValid() || userAircraft.position.isNull()) {
@@ -139,15 +147,22 @@ bool FgConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     // userAircraft.structuralIcePercent
 
     // Weight
-    // userAircraft.airplaneTotalWeightLbs
     // userAircraft.airplaneMaxGrossWeightLbs
-    // userAircraft.airplaneEmptyWeightLbs
+    if (flightModel == "jsb") {
+        userAircraft.airplaneTotalWeightLbs = airplaneTotalWeightLbsJsbsim;
+        // simplification - does not account people & luggage weight
+        userAircraft.airplaneEmptyWeightLbs = airplaneTotalWeightLbsJsbsim - fuelTotalWeightLbs;
+    } else {
+        userAircraft.airplaneTotalWeightLbs = airplaneTotalWeightLbsYasim;
+        // simplification - does not account people & luggage weight
+        userAircraft.airplaneEmptyWeightLbs = airplaneTotalWeightLbsYasim - fuelTotalWeightLbs;
+    }
 
     // Fuel flow in weight
     userAircraft.fuelTotalWeightLbs = fuelTotalWeightLbs;
     userAircraft.fuelTotalQuantityGallons = fuelTotalQuantityGallons;
-    // userAircraft.fuelFlowPPH
-    // userAircraft.fuelFlowGPH
+    userAircraft.fuelFlowPPH = fuelFlowPPS * 3600;
+    userAircraft.fuelFlowGPH = fuelFlowPPS * 3600 * 8.35; // for water ??
     // userAircraft.numberOfEngines
 
     userAircraft.ambientVisibilityMeter = ambientVisibilityMeter;
@@ -205,4 +220,4 @@ bool FgConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     return true;
 }
 
-} // namespace lfgc
+} // namespace xpc

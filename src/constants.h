@@ -23,7 +23,6 @@
 
 namespace lfgc {
 /* key names for atools::settings */
-const QLatin1Literal SETTINGS_OPTIONS_HIDE_HOSTNAME("Options/HideHostname");
 const QLatin1Literal SETTINGS_OPTIONS_DEFAULT_PORT("Options/DefaultPort");
 const QLatin1Literal SETTINGS_OPTIONS_UPDATE_RATE("Options/UpdateRate");
 const QLatin1Literal SETTINGS_OPTIONS_RECONNECT_RATE("Options/ReconnectRate");

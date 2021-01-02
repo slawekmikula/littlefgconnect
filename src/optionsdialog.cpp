@@ -44,19 +44,9 @@ unsigned int OptionsDialog::getUpdateRate() const
   return static_cast<unsigned int>(ui->spinBoxOptionsUpdateRate->value());
 }
 
-bool OptionsDialog::isHideHostname() const
-{
-  return ui->checkBoxHideHostname->isChecked();
-}
-
 bool OptionsDialog::isFetchAiAircraft() const
 {
   return ui->checkBoxFetchAiAircraft->isChecked();
-}
-
-void OptionsDialog::setHideHostname(bool hide)
-{
-  ui->checkBoxHideHostname->setChecked(hide);
 }
 
 void OptionsDialog::setFetchAiAircraft(bool value)
