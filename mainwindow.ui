@@ -79,6 +79,9 @@
    <property name="movable">
     <bool>false</bool>
    </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
    <property name="floatable">
     <bool>false</bool>
    </property>
@@ -167,7 +170,7 @@
      <normaloff>:/littlefgconnect/resources/icons/fgconnect.svg</normaloff>:/littlefgconnect/resources/icons/fgconnect.svg</iconset>
    </property>
    <property name="text">
-    <string>Start connection</string>
+    <string>Start/Stop connection</string>
    </property>
    <property name="toolTip">
     <string>Open connection and wait for data from the FlightGear</string>
