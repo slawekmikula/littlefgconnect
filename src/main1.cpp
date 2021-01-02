@@ -23,7 +23,7 @@
 #include "settings/settings.h"
 #include "gui/consoleapplication.h"
 #include "sharedmemorywriter.h"
-#include "xpconnect.h"
+#include "fgconnect.h"
 #include "util/version.h"
 
 #include <QDebug>

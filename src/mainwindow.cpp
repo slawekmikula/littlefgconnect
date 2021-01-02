@@ -50,10 +50,8 @@ using atools::gui::HelpHandler;
 const QString HELP_BRANCH = "develop/2.5"; // VERSION_NUMBER
 
 /* Important: keep slash at the end. Otherwise Gitbook will not display the page properly */
-const QString HELP_ONLINE_URL(
-  "https://www.littlenavmap.org/manuals/littlenavconnect/" + HELP_BRANCH + "/${LANG}/");
-
-const QString HELP_OFFLINE_FILE("help/little-navconnect-user-manual-${LANG}.pdf");
+const QString HELP_ONLINE_URL("https://www.littlenavmap.org/manuals/littlefgconnect/" + HELP_BRANCH + "/${LANG}/");
+const QString HELP_OFFLINE_FILE("help/little-fgconnect-user-manual-${LANG}.pdf");
 
 MainWindow::MainWindow()
   : ui(new Ui::MainWindow)
@@ -61,14 +59,14 @@ MainWindow::MainWindow()
   qDebug() << Q_FUNC_INFO;
 
   aboutMessage =
-    QObject::tr("<p>is the Fligh Simulator Network agent for Little Navmap.</p>"
+    QObject::tr("<p>is the FlightGear connection agent for Little Navmap.</p>"
                   "<p>This software is licensed under "
                     "<a href=\"http://www.gnu.org/licenses/gpl-3.0\">GPL3</a> or any later version.</p>"
                       "<p>The source code for this application is available at "
                         "<a href=\"https://github.com/albar965\">Github</a>.</p>"
                           "<p>More about my projects at "
                             "<a href=\"https://www.littlenavmap.org\">www.littlenavmap.org</a>.</p>"
-                              "<p><b>Copyright 2015-2019 Alexander Barthel</b></p>");
+                              "<p><b>Copyright 2015-2020 Alexander Barthel</b></p>");
 
   // Show a dialog on fatal log events like asserts
   atools::logging::LoggingGuiAbortHandler::setGuiAbortFunction(this);
@@ -79,10 +77,10 @@ MainWindow::MainWindow()
 
   // Get the online indicator file which shows which help files are available online
   QString onlineFlagFile = atools::gui::HelpHandler::getHelpFile(
-    QString("help") + QDir::separator() + "little-navconnect-user-manual-${LANG}.online", false /*override*/);
+    QString("help") + QDir::separator() + "little-fgconnect-user-manual-${LANG}.online", "en");
 
   // Extract language from the file
-  QRegularExpression regexp("little-navconnect-user-manual-(.+)\\.online", QRegularExpression::CaseInsensitiveOption);
+  QRegularExpression regexp("little-fgconnect-user-manual-(.+)\\.online", QRegularExpression::CaseInsensitiveOption);
   QRegularExpressionMatch match = regexp.match(onlineFlagFile);
   if(match.hasMatch() && !match.captured(1).isEmpty())
     supportedLanguageOnlineHelp = match.captured(1);
@@ -93,36 +91,8 @@ MainWindow::MainWindow()
   parser.addHelpOption();
   parser.addVersionOption();
 
-  QCommandLineOption saveReplayOpt({"s", "save-replay"},
-                                   QObject::tr("Save replay data to <file>."),
-                                   QObject::tr("file"));
-  parser.addOption(saveReplayOpt);
-
-  QCommandLineOption loadReplayOpt({"l", "load-replay"},
-                                   QObject::tr("Load replay data from <file>."),
-                                   QObject::tr("file"));
-  parser.addOption(loadReplayOpt);
-
-  QCommandLineOption replaySpeedOpt({"r", "replay-speed"},
-                                    QObject::tr("Use speed factor <speed> for replay."),
-                                    QObject::tr("speed"));
-  parser.addOption(replaySpeedOpt);
-
-  QCommandLineOption showReplay({"g", "replay-gui"},
-                                QObject::tr("Show replay menu items."));
-  parser.addOption(showReplay);
-
   // Process the actual command line arguments given by the user
   parser.process(*QCoreApplication::instance());
-  saveReplayFile = parser.value(saveReplayOpt);
-  loadReplayFile = parser.value(loadReplayOpt);
-  replaySpeed = parser.value(replaySpeedOpt).toInt();
-  if(parser.isSet(showReplay))
-  {
-    ui->menuTools->insertActions(ui->actionResetMessages,
-                                 {ui->actionReplayFileLoad, ui->actionReplayFileSave, ui->actionReplayStop});
-    ui->menuTools->insertSeparator(ui->actionResetMessages);
-  }
 
   // Right align the help button
   QWidget *spacerWidget = new QWidget(ui->toolBar);
@@ -136,35 +106,13 @@ MainWindow::MainWindow()
   // Create help handler for managing the Help menu items
   helpHandler = new atools::gui::HelpHandler(this, aboutMessage, GIT_REVISION);
 
-  int defaultPort = Settings::instance().getAndStoreValue(lnc::SETTINGS_OPTIONS_DEFAULT_PORT, 51968).toInt();
-  bool hideHostname =
-    Settings::instance().getAndStoreValue(lnc::SETTINGS_OPTIONS_HIDE_HOSTNAME, false).toBool();
-  // Create nav server but to not start it yet
-  atools::fs::ns::NavServerOptions options = atools::fs::ns::NONE;
-  if(verbose)
-    options |= atools::fs::ns::VERBOSE;
-  if(hideHostname)
-    options |= atools::fs::ns::HIDE_HOST;
-
-  navServer = new atools::fs::ns::NavServer(this, options, defaultPort);
-
   // Create a group to turn the simulator actions into mutual exclusive ones
   simulatorActionGroup = new QActionGroup(ui->menuTools);
-  simulatorActionGroup->addAction(ui->actionConnectFsx);
-  simulatorActionGroup->addAction(ui->actionConnectXplane);
+  simulatorActionGroup->addAction(ui->actionConnectFlightgear);
 
-  connect(ui->actionConnectFsx, &QAction::triggered, this, &MainWindow::simulatorSelectionTriggered);
-  connect(ui->actionConnectXplane, &QAction::triggered, this, &MainWindow::simulatorSelectionTriggered);
+  connect(ui->actionConnectFlightgear, &QAction::triggered, this, &MainWindow::startStopConnection);
 
   connect(ui->actionQuit, &QAction::triggered, this, &QMainWindow::close);
-
-  if(parser.isSet(showReplay))
-  {
-    connect(ui->actionReplayFileLoad, &QAction::triggered, this, &MainWindow::loadReplayFileTriggered);
-    connect(ui->actionReplayFileSave, &QAction::triggered, this, &MainWindow::saveReplayFileTriggered);
-    connect(ui->actionReplayStop, &QAction::triggered, this, &MainWindow::stopReplay);
-  }
-
   connect(ui->actionResetMessages, &QAction::triggered, this, &MainWindow::resetMessages);
   connect(ui->actionOptions, &QAction::triggered, this, &MainWindow::options);
   connect(ui->actionContents, &QAction::triggered, this, &MainWindow::showOnlineHelp);
@@ -184,20 +132,11 @@ MainWindow::~MainWindow()
 {
   qDebug() << Q_FUNC_INFO;
 
-  navServer->stopServer();
-  qDebug() << Q_FUNC_INFO << "navServer stopped";
-
-  delete navServer;
-  qDebug() << Q_FUNC_INFO << "navServer deleted";
-
   dataReader->terminateThread();
   qDebug() << Q_FUNC_INFO << "dataReader terminated";
 
   delete dataReader;
   qDebug() << Q_FUNC_INFO << "dataReader deleted";
-
-  delete fsxConnectHandler;
-  qDebug() << Q_FUNC_INFO << "fsxConnectHandler deleted";
 
   delete xpConnectHandler;
   qDebug() << Q_FUNC_INFO << "xpConnectHandler deleted";
@@ -227,84 +166,7 @@ void MainWindow::showOnlineHelp()
 
 void MainWindow::showOfflineHelp()
 {
-  HelpHandler::openFile(this, HelpHandler::getHelpFile(HELP_OFFLINE_FILE, false /* override */));
-}
-
-atools::fs::sc::ConnectHandler *MainWindow::handlerForSelection()
-{
-  atools::fs::sc::ConnectHandler *handler;
-  if(ui->actionConnectFsx->isChecked())
-    handler = fsxConnectHandler;
-  else
-    handler = xpConnectHandler;
-
-  return handler;
-}
-
-void MainWindow::handlerChanged()
-{
-  if(ui->actionConnectFsx->isChecked())
-  {
-    qInfo(atools::fs::ns::gui).noquote().nospace()
-      << tr("Connecting to FSX or Prepar3D using SimConnect.");
-    Settings::instance().setValue(lnc::SETTINGS_OPTIONS_SIMULATOR_FSX, true);
-  }
-  else
-  {
-    qInfo(atools::fs::ns::gui).noquote().nospace()
-      << tr("Connecting to X-Plane using the Little Xpconnect plugin.");
-    Settings::instance().setValue(lnc::SETTINGS_OPTIONS_SIMULATOR_FSX, false);
-  }
-  Settings::instance().syncSettings();
-}
-
-void MainWindow::simulatorSelectionTriggered()
-{
-  // Update rate changed - restart data readers
-  dataReader->terminateThread();
-  dataReader->setHandler(handlerForSelection());
-  dataReader->start();
-  handlerChanged();
-}
-
-void MainWindow::saveReplayFileTriggered()
-{
-  QString filepath = atools::gui::Dialog(this).saveFileDialog(
-    tr("Save Replay"), tr("Replay Files (*.replay);;All Files (*)"), "replay", "Replay/",
-    QString(), "littlenavconnect.replay");
-
-  if(!filepath.isEmpty())
-  {
-    dataReader->terminateThread();
-    dataReader->setSaveReplayFilepath(filepath);
-    dataReader->setLoadReplayFilepath(QString());
-
-    dataReader->start();
-  }
-}
-
-void MainWindow::loadReplayFileTriggered()
-{
-  QString filepath = atools::gui::Dialog(this).openFileDialog(
-    tr("Open Replay"), tr("Replay Files (*.replay);;All Files (*)"), "Replay/", QString());
-
-  if(!filepath.isEmpty())
-  {
-    dataReader->terminateThread();
-    dataReader->setSaveReplayFilepath(QString());
-    dataReader->setLoadReplayFilepath(filepath);
-
-    dataReader->start();
-  }
-}
-
-void MainWindow::stopReplay()
-{
-  dataReader->terminateThread();
-  dataReader->setSaveReplayFilepath(QString());
-  dataReader->setLoadReplayFilepath(QString());
-
-  dataReader->start();
+  HelpHandler::openFile(this, HelpHandler::getHelpFile(HELP_OFFLINE_FILE, "en" /* override */));
 }
 
 void MainWindow::options()
@@ -312,37 +174,31 @@ void MainWindow::options()
   OptionsDialog dialog;
 
   Settings& settings = Settings::instance();
-  unsigned int updateRateMs =
-    settings.getAndStoreValue(lnc::SETTINGS_OPTIONS_UPDATE_RATE, 500).toUInt();
-  int port = settings.getAndStoreValue(lnc::SETTINGS_OPTIONS_DEFAULT_PORT, 51968).toInt();
-  bool hideHostname = settings.getAndStoreValue(lnc::SETTINGS_OPTIONS_HIDE_HOSTNAME, false).toBool();
+  unsigned int updateRateMs = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_UPDATE_RATE, 500).toUInt();
+  int port = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_DEFAULT_PORT, 7755).toInt();
+  bool hideHostname = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_HIDE_HOSTNAME, false).toBool();
 
-  bool fetchAiAircraft = settings.getAndStoreValue(lnc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, true).toBool();
-  bool fetchAiShip = settings.getAndStoreValue(lnc::SETTINGS_OPTIONS_FETCH_AI_SHIP, true).toBool();
+  bool fetchAiAircraft = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, true).toBool();
 
   dialog.setUpdateRate(updateRateMs);
   dialog.setPort(port);
   dialog.setHideHostname(hideHostname);
   dialog.setFetchAiAircraft(fetchAiAircraft);
-  dialog.setFetchAiShip(fetchAiShip);
 
   int result = dialog.exec();
 
   if(result == QDialog::Accepted)
   {
-    settings.setValue(lnc::SETTINGS_OPTIONS_HIDE_HOSTNAME, static_cast<int>(dialog.isHideHostname()));
-    settings.setValue(lnc::SETTINGS_OPTIONS_UPDATE_RATE, static_cast<int>(dialog.getUpdateRate()));
-    settings.setValue(lnc::SETTINGS_OPTIONS_DEFAULT_PORT, dialog.getPort());
-    settings.setValue(lnc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, dialog.isFetchAiAircraft());
-    settings.setValue(lnc::SETTINGS_OPTIONS_FETCH_AI_SHIP, dialog.isFetchAiShip());
+    settings.setValue(lfgc::SETTINGS_OPTIONS_HIDE_HOSTNAME, static_cast<int>(dialog.isHideHostname()));
+    settings.setValue(lfgc::SETTINGS_OPTIONS_UPDATE_RATE, static_cast<int>(dialog.getUpdateRate()));
+    settings.setValue(lfgc::SETTINGS_OPTIONS_DEFAULT_PORT, dialog.getPort());
+    settings.setValue(lfgc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, dialog.isFetchAiAircraft());
 
     settings.syncSettings();
 
     atools::fs::sc::Options options = atools::fs::sc::NO_OPTION;
     if(dialog.isFetchAiAircraft())
       options |= atools::fs::sc::FETCH_AI_AIRCRAFT;
-    if(dialog.isFetchAiShip())
-      options |= atools::fs::sc::FETCH_AI_BOAT;
 
     dataReader->setSimconnectOptions(options);
 
@@ -356,25 +212,7 @@ void MainWindow::options()
 
     if(dialog.getPort() != port)
     {
-
       // Restart navserver on port change
-      int result2 = QMessageBox::Yes;
-      if(navServer->hasConnections())
-        result2 = atools::gui::Dialog(this).showQuestionMsgBox(
-          lnc::SETTINGS_ACTIONS_SHOW_PORT_CHANGE,
-          tr(
-            "There are still applications connected.\n"
-            "Really change the Network Port?"),
-          tr("Do not &show this dialog again."),
-          QMessageBox::Yes | QMessageBox::No,
-          QMessageBox::No, QMessageBox::Yes);
-
-      if(result2 == QMessageBox::Yes)
-      {
-        navServer->stopServer();
-        navServer->setPort(dialog.getPort());
-        navServer->startServer(dataReader);
-      }
     }
   }
 }
@@ -382,8 +220,8 @@ void MainWindow::options()
 void MainWindow::resetMessages()
 {
   Settings& settings = Settings::instance();
-  settings.setValue(lnc::SETTINGS_ACTIONS_SHOW_QUIT, true);
-  settings.setValue(lnc::SETTINGS_ACTIONS_SHOW_PORT_CHANGE, true);
+  settings.setValue(lfgc::SETTINGS_ACTIONS_SHOW_QUIT, true);
+  settings.setValue(lfgc::SETTINGS_ACTIONS_SHOW_PORT_CHANGE, true);
 }
 
 void MainWindow::logGuiMessage(QtMsgType type, const QMessageLogContext& context, const QString& message)
@@ -430,40 +268,83 @@ void MainWindow::readSettings()
 {
   qDebug() << Q_FUNC_INFO;
 
-  verbose = Settings::instance().getAndStoreValue(lnc::SETTINGS_OPTIONS_VERBOSE, false).toBool();
+  verbose = Settings::instance().getAndStoreValue(lfgc::SETTINGS_OPTIONS_VERBOSE, false).toBool();
 
-  atools::gui::WidgetState(lnc::SETTINGS_MAINWINDOW_WIDGET).restore(this);
+  atools::gui::WidgetState(lfgc::SETTINGS_MAINWINDOW_WIDGET).restore(this);
 }
 
 void MainWindow::writeSettings()
 {
   qDebug() << Q_FUNC_INFO;
 
-  atools::gui::WidgetState widgetState(lnc::SETTINGS_MAINWINDOW_WIDGET);
+  atools::gui::WidgetState widgetState(lfgc::SETTINGS_MAINWINDOW_WIDGET);
   widgetState.save(this);
   widgetState.syncSettings();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+  Q_UNUSED(event);
   // Catch all close events like Ctrl-Q or Menu/Exit or clicking on the
   // close button on the window frame
   qDebug() << Q_FUNC_INFO;
 
-  if(navServer->hasConnections())
-  {
-    int result = atools::gui::Dialog(this).showQuestionMsgBox(lnc::SETTINGS_ACTIONS_SHOW_QUIT,
-                                                              tr("There are still applications connected.\n"
-                                                                 "Really Quit?"),
-                                                              tr("Do not &show this dialog again."),
-                                                              QMessageBox::Yes | QMessageBox::No,
-                                                              QMessageBox::No, QMessageBox::Yes);
-
-    if(result != QMessageBox::Yes)
-      event->ignore();
-  }
-
   writeSettings();
+}
+
+void MainWindow::startStopConnection()
+{
+    qDebug() << Q_FUNC_INFO;
+
+    if(udpSocket == nullptr) {
+      udpSocket = new QUdpSocket(this);
+      if (!udpSocket->bind(7755)) {
+        qWarning() << Q_FUNC_INFO << "Cannot open UDP port";
+        udpSocket = nullptr;
+      } else {
+        QObject::connect(udpSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
+        qInfo() << Q_FUNC_INFO << "Attached to the UDP port";
+
+        thread = new SharedMemoryWriter();
+        thread->start();
+      }
+    } else {
+      if (udpSocket->state() == udpSocket->BoundState) {
+
+        qDebug() << Q_FUNC_INFO << "Closing connection";
+        thread->terminateThread();
+        delete thread;
+        thread = nullptr;
+
+        qDebug() << Q_FUNC_INFO << "Closing connection";
+        udpSocket->close();
+        delete udpSocket;
+        udpSocket = nullptr;
+      }
+    }
+}
+
+void MainWindow::readPendingDatagrams()
+{
+    QByteArray rxData;
+    QHostAddress sender;
+    quint16 senderPort;
+
+    while (udpSocket->hasPendingDatagrams())
+    {
+        qInfo() << Q_FUNC_INFO << "Read pending datagrams";
+
+        // Resize and zero byte buffer so we can make way for the new data.
+        rxData.fill(0, udpSocket->pendingDatagramSize());
+
+        // Read data from the UDP buffer.
+        udpSocket->readDatagram(rxData.data(), rxData.size(), &sender, &senderPort);
+
+        qInfo() << Q_FUNC_INFO << "Received: " << rxData.size();
+
+        // Copy data from datarefs and pass it over to the thread for writing into the shared memory
+        thread->fetchAndWriteData(false);
+    }
 }
 
 void MainWindow::mainWindowShown()
@@ -481,76 +362,27 @@ void MainWindow::mainWindowShown()
     SimConnectReply::getReplyVersion());
 
   // Build the handler classes which are an abstraction to SimConnect and the Little Xpconnect shared memory
-  fsxConnectHandler = new atools::fs::sc::SimConnectHandler(verbose);
-  fsxConnectHandler->loadSimConnect(QApplication::applicationFilePath() + ".simconnect");
   xpConnectHandler = new atools::fs::sc::XpConnectHandler();
-
-#ifdef Q_OS_WIN32
-  // Show toolbar with both buttons
-  bool fsx = true;
-
-  // Check the first time if SimConnect is available - if yes use FSX settings
-  // Otherwise fall back to stored value or X-Plane
-  fsx = settings.getAndStoreValue(lnc::SETTINGS_OPTIONS_SIMULATOR_FSX, fsxConnectHandler->isLoaded()).toBool();
-
-  if(!fsxConnectHandler->isLoaded())
-    // No SimConnect switch to X-Plane
-    fsx = false;
-
-  qDebug() << "FSX status" << fsx;
-
-  if(fsxConnectHandler->isLoaded())
-  {
-    ui->toolBar->insertAction(ui->actionOptions, ui->actionConnectFsx);
-    ui->toolBar->insertAction(ui->actionOptions, ui->actionConnectXplane);
-    ui->toolBar->insertSeparator(ui->actionOptions);
-
-    ui->menuTools->insertAction(ui->actionResetMessages, ui->actionConnectFsx);
-    ui->menuTools->insertAction(ui->actionResetMessages, ui->actionConnectXplane);
-    ui->menuTools->insertSeparator(ui->actionResetMessages);
-  }
-
-  ui->actionConnectFsx->setChecked(fsx);
-  ui->actionConnectXplane->setChecked(!fsx);
-
-#else
-  // Activate X-Plane on non windows
-  settings.setValue(lnc::SETTINGS_OPTIONS_SIMULATOR_FSX, false);
-  ui->actionConnectXplane->setChecked(true);
-  ui->actionConnectFsx->setChecked(false);
-#endif
 
   ui->menuTools->insertAction(ui->actionOptions, ui->toolBar->toggleViewAction());
 
   // Build the thread which will read the data from the interfaces
   dataReader = new atools::fs::sc::DataReaderThread(this, verbose);
-  dataReader->setHandler(handlerForSelection());
-  handlerChanged();
-
-  dataReader->setReconnectRateSec(settings.getAndStoreValue(lnc::SETTINGS_OPTIONS_RECONNECT_RATE, 10).toInt());
-  dataReader->setUpdateRate(settings.getAndStoreValue(lnc::SETTINGS_OPTIONS_UPDATE_RATE, 500).toUInt());
-  dataReader->setLoadReplayFilepath(loadReplayFile);
-  dataReader->setSaveReplayFilepath(saveReplayFile);
-  dataReader->setReplaySpeed(replaySpeed);
+  dataReader->setHandler(xpConnectHandler);
+  dataReader->setReconnectRateSec(settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_RECONNECT_RATE, 10).toInt());
+  dataReader->setUpdateRate(settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_UPDATE_RATE, 500).toUInt());
 
   atools::fs::sc::Options options = atools::fs::sc::NO_OPTION;
-  if(settings.getAndStoreValue(lnc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, true).toBool())
+  if(settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, true).toBool())
     options |= atools::fs::sc::FETCH_AI_AIRCRAFT;
-  if(settings.getAndStoreValue(lnc::SETTINGS_OPTIONS_FETCH_AI_SHIP, true).toBool())
-    options |= atools::fs::sc::FETCH_AI_BOAT;
   dataReader->setSimconnectOptions(options);
 
   connect(dataReader, &atools::fs::sc::DataReaderThread::postLogMessage, this, &MainWindow::postLogMessage);
 
-  qInfo(atools::fs::ns::gui).noquote().nospace() << tr("Starting server. This can take up to a minute ...");
-
   QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-
   QGuiApplication::setOverrideCursor(Qt::WaitCursor);
 
   dataReader->start();
-
-  navServer->startServer(dataReader);
 
   QGuiApplication::restoreOverrideCursor();
 

@@ -159,22 +159,18 @@ message(-----------------------------------)
 
 SOURCES +=\
   src/constants.cpp \
-  src/dataref.cpp \
+  src/fgconnect.cpp \
   src/main.cpp \  
-  src/main1.cpp \
   src/mainwindow.cpp \
   src/optionsdialog.cpp \
-  src/sharedmemorywriter.cpp \
-  src/xpconnect.cpp
+  src/sharedmemorywriter.cpp
 
 HEADERS  += \
   src/constants.h \
-  src/dataref.h \
-  src/littlexpconnect_global.h \
+  src/fgconnect.h \
   src/mainwindow.h \
   src/optionsdialog.h \
-  src/sharedmemorywriter.h \
-  src/xpconnect.h
+  src/sharedmemorywriter.h
 
 FORMS    += mainwindow.ui \
   optionsdialog.ui
@@ -207,8 +203,6 @@ OTHER_FILES += \
 unix:!macx {
   copydata.commands = cp -avfu $$PWD/help $$OUT_PWD &&
   copydata.commands += mkdir -p $$OUT_PWD/translations &&
-  copydata.commands += cp -avfu $$PWD/*.qm $$OUT_PWD/translations &&
-  copydata.commands += cp -avfu $$ATOOLS_INC_PATH/../*.qm $$OUT_PWD/translations &&
   copydata.commands += cp -vf $$PWD/desktop/littlefgconnect*.sh $$OUT_PWD &&
   copydata.commands += chmod -v a+x $$OUT_PWD/littlefgconnect*.sh
 }
@@ -216,8 +210,6 @@ unix:!macx {
 # Mac OS X - Copy help and Marble plugins and data
 macx {
   copydata.commands += cp -Rv $$PWD/help $$OUT_PWD/littlefgconnect.app/Contents/MacOS &&
-  copydata.commands += cp -vf $$PWD/*.qm $$OUT_PWD/littlefgconnect.app/Contents/MacOS &&
-  copydata.commands += cp -vf $$ATOOLS_INC_PATH/../*.qm $$OUT_PWD/littlefgconnect.app/Contents/MacOS
 }
 
 # =====================================================================
@@ -245,9 +237,6 @@ unix:!macx {
   deploy.commands += cp -vf \"$$PWD/desktop/Little FGconnect.desktop\" $$DEPLOY_DIR &&
   exists(/usr/lib/x86_64-linux-gnu/libssl.so) : deploy.commands += cp -vfaL /usr/lib/x86_64-linux-gnu/libssl.so $${DEPLOY_DIR_LIB}/libssl.so &&
   exists(/usr/lib/x86_64-linux-gnu/libcrypto.so) : deploy.commands += cp -vfaL /usr/lib/x86_64-linux-gnu/libcrypto.so $${DEPLOY_DIR_LIB}/libcrypto.so &&
-  deploy.commands += cp -vfa $$[QT_INSTALL_TRANSLATIONS]/qt_??.qm  $$DEPLOY_DIR/translations &&
-  deploy.commands += cp -vfa $$[QT_INSTALL_TRANSLATIONS]/qt_??_??.qm  $$DEPLOY_DIR/translations &&
-  deploy.commands += cp -vfa $$[QT_INSTALL_TRANSLATIONS]/qtbase*.qm  $$DEPLOY_DIR/translations &&
   deploy.commands += cp -vfa $$[QT_INSTALL_PLUGINS]/iconengines/libqsvgicon.so*  $$DEPLOY_DIR_LIB/iconengines &&
   deploy.commands += cp -vfa $$[QT_INSTALL_PLUGINS]/imageformats/libqgif.so*  $$DEPLOY_DIR_LIB/imageformats &&
   deploy.commands += cp -vfa $$[QT_INSTALL_PLUGINS]/imageformats/libqjpeg.so*  $$DEPLOY_DIR_LIB/imageformats &&
@@ -281,9 +270,6 @@ macx {
   deploy.commands = rm -Rfv $$DEPLOY_APP &&
   deploy.commands += macdeployqt littlefgconnect.app -always-overwrite &&
   deploy.commands += cp -rfv $$OUT_PWD/littlefgconnect.app $$DEPLOY_APP &&
-  deploy.commands += cp -fv $$[QT_INSTALL_TRANSLATIONS]/qt_??.qm  $$DEPLOY_APP/Contents/MacOS &&
-  deploy.commands += cp -fv $$[QT_INSTALL_TRANSLATIONS]/qt_??_??.qm  $$DEPLOY_APP/Contents/MacOS &&
-  deploy.commands += cp -fv $$[QT_INSTALL_TRANSLATIONS]/qtbase*.qm  $$DEPLOY_APP/Contents/MacOS &&
   deploy.commands += cp -fv $$PWD/build/mac/Info.plist $$DEPLOY_APP/Contents &&
   deploy.commands += cp -fv $$PWD/LICENSE.txt $$DEPLOY_DIR &&
   deploy.commands += cp -fv $$PWD/README.txt $$DEPLOY_DIR/README-LittleFGconnect.txt &&
@@ -302,8 +288,6 @@ win32 {
   deploy.commands += xcopy $$p($$PWD/CHANGELOG.txt) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$p($$PWD/README.txt) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$p($$PWD/LICENSE.txt) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
-  deploy.commands += xcopy $$p($$PWD/*.qm) $$p($$DEPLOY_BASE/$$TARGET_NAME/translations) &&
-  deploy.commands += xcopy $$p($$ATOOLS_INC_PATH/../*.qm) $$p($$DEPLOY_BASE/$$TARGET_NAME/translations) &&
   deploy.commands += xcopy $$p($$PWD/littlefgconnect.exe.simconnect) $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$OPENSSL_PATH\libcrypto-1_1.dll $$p($$DEPLOY_BASE/$$TARGET_NAME) &&
   deploy.commands += xcopy $$OPENSSL_PATH\libssl-1_1.dll $$p($$DEPLOY_BASE/$$TARGET_NAME) &&

@@ -1,5 +1,6 @@
 /*****************************************************************************
-* Copyright 2015-2019 Alexander Barthel alex@littlenavmap.org
+* Copyright 2015-2020 Alexander Barthel alex@littlenavmap.org
+*           2020 Slawomir Mikula slawek.mikula@gmail.com
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,6 +20,9 @@
 #define LITTLEFGCONNECT_MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QUdpSocket>
+
+#include "sharedmemorywriter.h"
 
 namespace Ui {
 class MainWindow;
@@ -62,12 +66,14 @@ signals:
   /* Emitted when window is shown the first time */
   void windowShown();
 
+private slots:
+  void readPendingDatagrams();
+
 private:
   /* Loggin handler will send log messages of category gui to this method which will emit
    * appendLogMessage to ensure that the message is appended using the main thread context. */
   void logGuiMessage(QtMsgType type, const QMessageLogContext& context, const QString& message);
   virtual void showEvent(QShowEvent *event) override;
-
   virtual void closeEvent(QCloseEvent *event) override;
 
   void readSettings();
@@ -82,34 +88,27 @@ private:
   /* Options dialog */
   void options();
 
-  void saveReplayFileTriggered();
-  void loadReplayFileTriggered();
-  void stopReplay();
   void showOnlineHelp();
   void showOfflineHelp();
-  void simulatorSelectionTriggered();
-  void handlerChanged();
+
+  void startStopConnection();
 
   Ui::MainWindow *ui = nullptr;
 
-  // Navserver that waits and accepts tcp connections. Starts a NavServerWorker in a thread for each connection.
-  atools::fs::ns::NavServer *navServer = nullptr;
-
   // Runs in background and fetches data from simulator - signals are sent to NavServerWorker threads
   atools::fs::sc::DataReaderThread *dataReader = nullptr;
-  atools::fs::sc::SimConnectHandler *fsxConnectHandler = nullptr;
   atools::fs::sc::XpConnectHandler *xpConnectHandler = nullptr;
   QActionGroup *simulatorActionGroup = nullptr;
-  atools::fs::sc::ConnectHandler *handlerForSelection();
+
+  // FlightGear communication
+  QUdpSocket* udpSocket = nullptr;
+  SharedMemoryWriter *thread = nullptr;
 
   atools::gui::HelpHandler *helpHandler = nullptr;
   bool firstStart = true; // Used to emit the first windowShown signal
   bool verbose = false;
 
-  QString saveReplayFile, loadReplayFile;
-  int replaySpeed = 1;
   QString supportedLanguageOnlineHelp;
-
   QString aboutMessage;
 };
 

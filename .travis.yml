@@ -50,7 +50,7 @@ script:
     - '[ "$TRAVIS_SECURE_ENV_VARS" == "true" ] || qmake ../atools/atools.pro CONFIG+=release'
     - '[ "$TRAVIS_SECURE_ENV_VARS" == "true" ] || make -j2'
 
-    # Build littlenavconnect
+    # Build littlefgconnect
     - mkdir ../build-littlefgconnect-release
     - cd ../build-littlefgconnect-release
     - qmake ../littlefgconnect/littlefgconnect.pro CONFIG+=release

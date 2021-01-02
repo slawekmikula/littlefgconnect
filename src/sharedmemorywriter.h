@@ -19,6 +19,7 @@
 #define SHAREDMEMORYWRITERTHREAD_H
 
 #include "fs/sc/simconnectdata.h"
+#include "fgconnect.h"
 
 #include <QMutex>
 #include <QSharedMemory>
@@ -57,11 +58,10 @@ private:
   QMutex waitMutex;
   QWaitCondition waitCondition;
 
+  lfgc::FgConnect *fgConnect = nullptr;
+
   /* Shared memory for local communication */
   QSharedMemory sharedMemory;
-
-  xpc::XpConnect *xpConnect = nullptr;
-
 };
 
 #endif // SHAREDMEMORYWRITERTHREAD_H

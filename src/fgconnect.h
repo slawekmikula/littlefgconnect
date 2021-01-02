@@ -1,5 +1,6 @@
 /*****************************************************************************
 * Copyright 2015-2020 Alexander Barthel alex@littlenavmap.org
+*           2020 Slawomir Mikula slawek.mikula@gmail.com
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,8 +16,8 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#ifndef LITTLEXPC_XPCONNECT_H
-#define LITTLEXPC_XPCONNECT_H
+#ifndef LITTLEFGCONNECT_FGCONNECT_H
+#define LITTLEFGCONNECT_FGCONNECT_H
 
 #include <QCache>
 
@@ -29,31 +30,22 @@ class SimConnectAircraft;
 }
 }
 
-namespace xpc {
+namespace lfgc {
 
 /*
  * Class that has full access to SimConnectData.
  */
-class XpConnect
+class FgConnect
 {
 public:
-  XpConnect();
-  ~XpConnect();
+  FgConnect();
+  ~FgConnect();
 
-  /* Fill SimConnectData from X-Plane datarefs. Returns true if data was found */
+  /* Fill SimConnectData from FlightGear datarefs. Returns true if data was found */
   bool fillSimConnectData(atools::fs::sc::SimConnectData& data, bool fetchAi);
-
-  /* Initilaize the datarefs and print a warning if something is wrong. */
-  void initDataRefs();
-
-private:
-  /* Cache key value pairs from acf files to avoid reading the files. */
-  QCache<QString, QHash<QString, QString> > acfFileValues;
-
-  void loadAcf(atools::fs::sc::SimConnectAircraft& aircraft, quint32 objId);
 
 };
 
-} // namespace xpc
+} // namespace lfgc
 
-#endif // LITTLEXPC_XPCONNECT_H
+#endif // LITTLEFGCONNECT_FGCONNECT_H

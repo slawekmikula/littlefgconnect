@@ -1,5 +1,6 @@
 /*****************************************************************************
-* Copyright 2015-2019 Alexander Barthel alex@littlenavmap.org
+* Copyright 2015-2020 Alexander Barthel alex@littlenavmap.org
+*           2020 Slawomir Mikula slawek.mikula@gmail.com
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,20 +21,21 @@
 
 #include <QLatin1Literal>
 
-namespace lnc {
+namespace lfgc {
 /* key names for atools::settings */
 const QLatin1Literal SETTINGS_OPTIONS_HIDE_HOSTNAME("Options/HideHostname");
 const QLatin1Literal SETTINGS_OPTIONS_DEFAULT_PORT("Options/DefaultPort");
 const QLatin1Literal SETTINGS_OPTIONS_UPDATE_RATE("Options/UpdateRate");
+const QLatin1Literal SETTINGS_OPTIONS_RECONNECT_RATE("Options/ReconnectRate");
 const QLatin1Literal SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT("Options/FetchAiAircraft");
-const QLatin1Literal SETTINGS_OPTIONS_FETCH_AI_SHIP("Options/FetchAiShip");
+const QLatin1Literal SETTINGS_OPTIONS_VERBOSE("Options/Verbose");
+const QLatin1Literal SETTINGS_OPTIONS_LANGUAGE("Options/Language");
+
+const QLatin1Literal SETTINGS_MAINWINDOW_WIDGET("MainWindow/Widget");
+
 const QLatin1Literal SETTINGS_ACTIONS_SHOW_PORT_CHANGE("Actions/ShowPortChange");
 const QLatin1Literal SETTINGS_ACTIONS_SHOW_QUIT("Actions/ShowQuit");
-const QLatin1Literal SETTINGS_OPTIONS_VERBOSE("Options/Verbose");
-const QLatin1Literal SETTINGS_MAINWINDOW_WIDGET("MainWindow/Widget");
-const QLatin1Literal SETTINGS_OPTIONS_RECONNECT_RATE("Options/ReconnectRate");
-const QLatin1Literal SETTINGS_OPTIONS_LANGUAGE("Options/Language");
-const QLatin1Literal SETTINGS_OPTIONS_SIMULATOR_FSX("Options/Simulator");
-} // namespace lnc
+
+} // namespace lfgc
 
 #endif // LITTLEFGCONNECT_CONSTANTS_H

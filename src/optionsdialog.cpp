@@ -54,11 +54,6 @@ bool OptionsDialog::isFetchAiAircraft() const
   return ui->checkBoxFetchAiAircraft->isChecked();
 }
 
-bool OptionsDialog::isFetchAiShip() const
-{
-  return ui->checkBoxFetchAiShip->isChecked();
-}
-
 void OptionsDialog::setHideHostname(bool hide)
 {
   ui->checkBoxHideHostname->setChecked(hide);
@@ -67,11 +62,6 @@ void OptionsDialog::setHideHostname(bool hide)
 void OptionsDialog::setFetchAiAircraft(bool value)
 {
   ui->checkBoxFetchAiAircraft->setChecked(value);
-}
-
-void OptionsDialog::setFetchAiShip(bool value)
-{
-  ui->checkBoxFetchAiShip->setChecked(value);
 }
 
 void OptionsDialog::setPort(int port)

@@ -90,6 +90,8 @@
    </attribute>
    <addaction name="actionOptions"/>
    <addaction name="actionContents"/>
+   <addaction name="separator"/>
+   <addaction name="actionConnectFlightgear"/>
   </widget>
   <action name="actionQuit">
    <property name="icon">
@@ -144,27 +146,6 @@
     <string>&amp;Options</string>
    </property>
   </action>
-  <action name="actionReplayFileSave">
-   <property name="text">
-    <string>&amp;Save Replay File ...</string>
-   </property>
-  </action>
-  <action name="actionReplayFileLoad">
-   <property name="text">
-    <string>Open Replay &amp;File ...</string>
-   </property>
-   <property name="toolTip">
-    <string>Open Replay File</string>
-   </property>
-  </action>
-  <action name="actionReplayStop">
-   <property name="text">
-    <string>Stop Saving or Loading of Replay</string>
-   </property>
-   <property name="toolTip">
-    <string>Stop Saving or Loading of Replay</string>
-   </property>
-  </action>
   <action name="actionContentsOffline">
    <property name="icon">
     <iconset>
@@ -174,32 +155,18 @@
     <string>&amp;Contents (Offline, PDF)</string>
    </property>
   </action>
-  <action name="actionConnectFsx">
+  <action name="actionConnectFlightgear">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
-    <string>FSX or Prepar3D</string>
+    <string>Start connection</string>
    </property>
    <property name="toolTip">
-    <string>Connect to FSX or Prepar3D using SimConnect.</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+F</string>
-   </property>
-  </action>
-  <action name="actionConnectXplane">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>X-Plane</string>
-   </property>
-   <property name="toolTip">
-    <string>Connect to X-Plane using the Little Xpconnect plugin.</string>
+    <string>Open connection and wait for data from the FlightGear</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+X</string>

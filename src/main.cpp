@@ -22,9 +22,9 @@
 #include "settings/settings.h"
 #include "fs/sc/simconnectdata.h"
 #include "fs/sc/simconnectreply.h"
+#include "fs/ns/navservercommon.h"
 #include "gui/application.h"
 #include "gui/translator.h"
-#include "fs/ns/navservercommon.h"
 #include "constants.h"
 #include "atools.h"
 
@@ -55,20 +55,19 @@ int main(int argc, char *argv[])
 
   using atools::gui::Application;
   Application app(argc, argv);
-  Application::setWindowIcon(QIcon(":/littlenavconnect/resources/icons/navconnect.svg"));
-  Application::setApplicationName("Little Navconnect");
+  Application::setWindowIcon(QIcon(":/littlefgconnect/resources/icons/navconnect.svg")); // FIXME
+  Application::setApplicationName("Little Fgconnect");
   Application::setOrganizationName("ABarthel");
   Application::setOrganizationDomain("littlenavmap.org");
 
-  Application::setApplicationVersion("2.5.0.develop"); // VERSION_NUMBER - Little Navconnect
-  Application::setEmailAddresses({"alex@littlenavmap.org"});
+  Application::setApplicationVersion("2.7.0.develop"); // VERSION_NUMBER - Little Fgconnect
+  Application::setEmailAddresses({"alex@littlenavmap.org", "slawek.mikula@gmail.com"});
 
   // Initialize logging and force logfiles into the system or user temp directory
   LoggingHandler::initializeForTemp(atools::settings::Settings::getOverloadedPath(
-                                      ":/littlenavconnect/resources/config/logging.cfg"));
+                                      ":/littlefgconnect/resources/config/logging.cfg"));
 
   Application::addReportPath(QObject::tr("Log files:"), LoggingHandler::getLogFiles());
-
   Application::addReportPath(QObject::tr("Configuration:"), {Settings::getFilename()});
 
   // Print some information which can be useful for debugging
@@ -86,11 +85,11 @@ int main(int argc, char *argv[])
   Settings::logSettingsInformation();
 
   // Load local and Qt system translations from various places
-  Translator::load(Settings::instance().valueStr(lnc::SETTINGS_OPTIONS_LANGUAGE, QString()));
+  Translator::load(Settings::instance().valueStr(lfgc::SETTINGS_OPTIONS_LANGUAGE, QString()));
 
 #if defined(Q_OS_WIN32)
   // Detect other running application instance - this is unsafe on Unix since shm can remain after crashes
-  QSharedMemory shared("ed1b2f62-a6b3-8c64-09b4-e4daa232ecf4"); // generated GUID
+  QSharedMemory shared("cc6d9004-04a3-4f66-bdf1-e5dda8634279"); // generated GUID
   if(!shared.create(512, QSharedMemory::ReadWrite))
   {
     QMessageBox::critical(nullptr, QObject::tr("%1 - Error").arg(QApplication::applicationName()),
@@ -104,7 +103,6 @@ int main(int argc, char *argv[])
   mainWindow.show();
 
   int retval = app.exec();
-
   qDebug() << "app.exec() done, retval is" << retval << (retval == 0 ? "(ok)" : "(error)");
 
   return retval;
