@@ -42,7 +42,7 @@ public:
   ~FgConnect();
 
   /* Fill SimConnectData from FlightGear datarefs. Returns true if data was found */
-  bool fillSimConnectData(atools::fs::sc::SimConnectData& data, bool fetchAi);
+  bool fillSimConnectData(QString simData, atools::fs::sc::SimConnectData& data, bool fetchAi);
 
 };
 

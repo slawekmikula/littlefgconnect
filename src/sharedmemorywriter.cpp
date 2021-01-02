@@ -35,11 +35,11 @@ SharedMemoryWriter::~SharedMemoryWriter()
   delete fgConnect;
 }
 
-void SharedMemoryWriter::fetchAndWriteData(bool fetchAi)
+void SharedMemoryWriter::fetchAndWriteData(QString simData, bool fetchAi)
 {
   {
     QMutexLocker locker(&dataMutex);
-    if(!fgConnect->fillSimConnectData(data, fetchAi)) {
+    if(!fgConnect->fillSimConnectData(simData, data, fetchAi)) {
       data = atools::fs::sc::EMPTY_SIMCONNECT_DATA;
     }
   }

@@ -294,8 +294,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::startStopConnection()
 {
-    qDebug() << Q_FUNC_INFO;
-
     if(udpSocket == nullptr) {
       udpSocket = new QUdpSocket(this);
       if (!udpSocket->bind(7755)) {
@@ -303,7 +301,7 @@ void MainWindow::startStopConnection()
         udpSocket = nullptr;
       } else {
         QObject::connect(udpSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
-        qInfo() << Q_FUNC_INFO << "Attached to the UDP port";
+        qDebug() << Q_FUNC_INFO << "Attached to the UDP port";
 
         thread = new SharedMemoryWriter();
         thread->start();
@@ -332,7 +330,7 @@ void MainWindow::readPendingDatagrams()
 
     while (udpSocket->hasPendingDatagrams())
     {
-        qInfo() << Q_FUNC_INFO << "Read pending datagrams";
+        qDebug() << Q_FUNC_INFO << "Read pending datagrams";
 
         // Resize and zero byte buffer so we can make way for the new data.
         rxData.fill(0, udpSocket->pendingDatagramSize());
@@ -340,10 +338,13 @@ void MainWindow::readPendingDatagrams()
         // Read data from the UDP buffer.
         udpSocket->readDatagram(rxData.data(), rxData.size(), &sender, &senderPort);
 
-        qInfo() << Q_FUNC_INFO << "Received: " << rxData.size();
+        qDebug() << Q_FUNC_INFO << "Received: " << rxData.size();
+
+        // convert to ascii
+        QString dataAsString = QString(rxData);
 
         // Copy data from datarefs and pass it over to the thread for writing into the shared memory
-        thread->fetchAndWriteData(false);
+        thread->fetchAndWriteData(dataAsString, false);
     }
 }
 

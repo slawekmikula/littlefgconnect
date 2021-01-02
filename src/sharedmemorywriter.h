@@ -39,7 +39,7 @@ public:
 
   /* Fetch data from the datarefs (main thread context) and pass it over to the
    * shared memory writer (writing in this thread's context) */
-  void fetchAndWriteData(bool fetchAi);
+  void fetchAndWriteData(QString simData, bool fetchAi);
 
   /* Send termination signal and wait for terminated */
   void terminateThread();

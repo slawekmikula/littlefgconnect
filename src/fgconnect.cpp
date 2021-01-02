@@ -40,12 +40,15 @@ FgConnect::~FgConnect()
   qDebug() << Q_FUNC_INFO;
 }
 
-bool FgConnect::fillSimConnectData(atools::fs::sc::SimConnectData& data, bool fetchAi)
+bool FgConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectData& data, bool fetchAi)
 {
     Q_UNUSED(fetchAi);
 
-    QString retval = "2019-12-26T09:27:49;7200;3.564416;763.517456;2.513103;150.000000;26.924566;30.476448;39.534885;238.000000;5.453534;28949.210938;354.546478;347.994141;Piper PA28-161 Warrior II (160hp);PA28-161-160;50.0742416382;19.8020534515;347.994141;342.540619;0.000000;229.615570;0.004633;0.004734;0.000007;-12.254924";
+    //QString retval = "2019-12-26T09:27:49;7200;3.564416;763.517456;2.513103;150.000000;26.924566;30.476448;39.534885;238.000000;5.453534;28949.210938;354.546478;347.994141;Piper PA28-161 Warrior II (160hp);PA28-161-160;50.0742416382;19.8020534515;347.994141;342.540619;0.000000;229.615570;0.004633;0.004734;0.000007;-12.254924";
+    QString retval = simData;
     QStringList pieces = retval.split(";");
+
+    qDebug() << Q_FUNC_INFO << retval;
 
     if (pieces.size() == 1) {
         return false;
@@ -84,6 +87,8 @@ bool FgConnect::fillSimConnectData(atools::fs::sc::SimConnectData& data, bool fe
     QString airplaneTitle = pieces.at(index++);
     //      <name>airplaneModel = ""</name>
     QString airplaneModel = pieces.at(index++);
+    //      <name>airplaneCallsign = ""</name>
+    QString airplaneCallsign = pieces.at(index++);
     //      <name>atools::geo::Pos position - latitude</name>
     float latitude = pieces.at(index++).toFloat();
     //      <name>atools::geo::Pos position - longitude</name>
@@ -106,6 +111,8 @@ bool FgConnect::fillSimConnectData(atools::fs::sc::SimConnectData& data, bool fe
     float verticalSpeedFeetPerMin = pieces.at(index++).toFloat();
 
     atools::fs::sc::SimConnectUserAircraft& userAircraft = data.userAircraft;
+
+    qDebug() << Q_FUNC_INFO << "long: " << longitude << " lat: " << latitude;
 
     userAircraft.position = Pos(longitude, latitude, altitudeAboveGroundFt);
     if(!userAircraft.position.isValid() || userAircraft.position.isNull()) {
@@ -148,7 +155,7 @@ bool FgConnect::fillSimConnectData(atools::fs::sc::SimConnectData& data, bool fe
     // SimConnectAircraft
     userAircraft.airplaneTitle = airplaneTitle;
     userAircraft.airplaneModel = airplaneModel;
-    // userAircraft.airplaneReg;
+    userAircraft.airplaneReg = airplaneCallsign;
     // userAircraft.airplaneType;
     // userAircraft.airplaneAirline;
     // userAircraft.airplaneFlightnumber;
