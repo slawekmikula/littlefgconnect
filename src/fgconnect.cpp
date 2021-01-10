@@ -197,7 +197,7 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
 
     // Set misc flags
     userAircraft.flags = atools::fs::sc::IS_USER | atools::fs::sc::SIM_XPLANE; // FIXME
-    if((int)altitudeAboveGroundFt > 0) {
+    if((int)altitudeAboveGroundFt == 0) {
       userAircraft.flags |= atools::fs::sc::ON_GROUND;
     }
 
@@ -208,7 +208,7 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     // userAircraft.flags |= atools::fs::sc::SIM_PAUSED;
     // userAircraft.flags |= atools::fs::sc::SIM_REPLAY;
 
-    userAircraft.category = atools::fs::sc::UNKNOWN;
+    userAircraft.category = atools::fs::sc::AIRPLANE;
     // AIRPLANE, HELICOPTER, BOAT, GROUNDVEHICLE, CONTROLTOWER, SIMPLEOBJECT, VIEWER
 
     userAircraft.engineType = atools::fs::sc::UNSUPPORTED;
