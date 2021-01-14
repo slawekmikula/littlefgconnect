@@ -78,6 +78,8 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     float fuelTotalQuantityGallons = pieces.at(index++).toFloat();
     //      <name>fuelTotalWeightLbs = 0.f</name>
     float fuelTotalWeightLbs = pieces.at(index++).toFloat();
+    //      <name>fuelFlowGPH
+    float fuelFlowGPH = pieces.at(index++).toFloat();
     //      <name>fuelFlowPPH (in PPS)
     float fuelFlowPPS = pieces.at(index++).toFloat();
     //      <name>fuelFlowGPH (yasim)
@@ -165,25 +167,25 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     userAircraft.fuelTotalWeightLbs = fuelTotalWeightLbs;
     userAircraft.fuelTotalQuantityGallons = fuelTotalQuantityGallons;
 
-    float temperatureFarenheit = ambientTemperatureCelsius * 1.8 + 32;
-    // density relation of Jet A fuel:
-    // fuel has 7.275 lbs/gal at -100 °F
-    // fuel has 6.950 lbs/gal at 0 °F
-    // fuel has 6.625 lbs/gal at 100 °F
-    // change 0.00325 lbs/gal per 1 °F
-    float fuelDensityJetA = temperatureFarenheit * -0.00325 + 6.95;
-
-    // density relation of LL100 (AVGAS) fuel:
-    // fuel has 6.490 lbs/gal at -100 °F
-    // fuel has 6.080 lbs/gal at 0 °F
-    // fuel has 5.670 lbs/gal at 100 °F
-    // change 0.0041 lbs/gal per 1 °F
-    float fuelDensityll100 = temperatureFarenheit * -0.0041 + 6.08;
-
     if (flightModel.contains("jsb")) {
+        userAircraft.fuelFlowGPH = fuelFlowGPH;
         userAircraft.fuelFlowPPH = fuelFlowPPS * 3600;
-        userAircraft.fuelFlowGPH = fuelFlowPPS * 3600 * fuelDensityll100;
     } else {
+        float temperatureFarenheit = ambientTemperatureCelsius * 1.8 + 32;
+        // density relation of Jet A fuel:
+        // fuel has 7.275 lbs/gal at -100 °F
+        // fuel has 6.950 lbs/gal at 0 °F
+        // fuel has 6.625 lbs/gal at 100 °F
+        // change 0.00325 lbs/gal per 1 °F
+        float fuelDensityJetA = temperatureFarenheit * -0.00325 + 6.95;
+
+        // density relation of LL100 (AVGAS) fuel:
+        // fuel has 6.490 lbs/gal at -100 °F
+        // fuel has 6.080 lbs/gal at 0 °F
+        // fuel has 5.670 lbs/gal at 100 °F
+        // change 0.0041 lbs/gal per 1 °F
+        float fuelDensityll100 = temperatureFarenheit * -0.0041 + 6.08;
+
         userAircraft.fuelFlowGPH = fuelFlowGPH0 + fuelFlowGPH1 + fuelFlowGPH2 + fuelFlowGPH3;
         userAircraft.fuelFlowPPH = userAircraft.fuelFlowGPH * fuelDensityll100 ;
     }
