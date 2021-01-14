@@ -80,6 +80,14 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     float fuelTotalWeightLbs = pieces.at(index++).toFloat();
     //      <name>fuelFlowPPH (in PPS)
     float fuelFlowPPS = pieces.at(index++).toFloat();
+    //      <name>fuelFlowGPH (yasim)
+    float fuelFlowGPH0 = pieces.at(index++).toFloat();
+    //      <name>fuelFlowGPH (yasim)
+    float fuelFlowGPH1 = pieces.at(index++).toFloat();
+    //      <name>fuelFlowGPH (yasim)
+    float fuelFlowGPH2 = pieces.at(index++).toFloat();
+    //      <name>fuelFlowGPH (yasim)
+    float fuelFlowGPH3 = pieces.at(index++).toFloat();
     //      <name>magVarDeg = 0.f</name>
     float magVarDeg = pieces.at(index++).toFloat();
     //      <name>ambientVisibilityMeter = 0.f;f</name>
@@ -116,6 +124,9 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     float verticalSpeedFeetPerMin = pieces.at(index++).toFloat();
     //      flightModel Type (jsb or yasim)
     QString flightModel = pieces.at(index++);
+    //      flight freeze (pause)
+    QString flightFreeze = pieces.at(index++);
+    int flightReplay = pieces.at(index++).toInt();
 
     atools::fs::sc::SimConnectUserAircraft& userAircraft = data.userAircraft;
 
@@ -143,23 +154,39 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     // userAircraft.pitotIcePercent
     // userAircraft.structuralIcePercent
 
-    // Weight
-    // userAircraft.airplaneMaxGrossWeightLbs
-    if (QString::compare(flightModel, "\"jsb\"", Qt::CaseInsensitive)) {
-        userAircraft.airplaneTotalWeightLbs = airplaneTotalWeightLbsJsbsim;
-        // simplification - does not account people & luggage weight
-        userAircraft.airplaneEmptyWeightLbs = airplaneTotalWeightLbsJsbsim - fuelTotalWeightLbs;
-    } else {
-        userAircraft.airplaneTotalWeightLbs = airplaneTotalWeightLbsYasim;
-        // simplification - does not account people & luggage weight
-        userAircraft.airplaneEmptyWeightLbs = airplaneTotalWeightLbsYasim - fuelTotalWeightLbs;
-    }
+    // Weight    
+    userAircraft.airplaneTotalWeightLbs = flightModel.contains("jsb") ? airplaneTotalWeightLbsJsbsim : airplaneTotalWeightLbsYasim;
+    // simplification
+    userAircraft.airplaneMaxGrossWeightLbs = userAircraft.airplaneTotalWeightLbs;
+    // simplification - does not account people & luggage weight
+    userAircraft.airplaneEmptyWeightLbs = userAircraft.airplaneTotalWeightLbs - fuelTotalWeightLbs;
 
     // Fuel flow in weight
     userAircraft.fuelTotalWeightLbs = fuelTotalWeightLbs;
     userAircraft.fuelTotalQuantityGallons = fuelTotalQuantityGallons;
-    userAircraft.fuelFlowPPH = fuelFlowPPS * 3600;
-    userAircraft.fuelFlowGPH = fuelFlowPPS * 3600 * 8.35; // for water ??
+
+    float temperatureFarenheit = ambientTemperatureCelsius * 1.8 + 32;
+    // density relation of Jet A fuel:
+    // fuel has 7.275 lbs/gal at -100 °F
+    // fuel has 6.950 lbs/gal at 0 °F
+    // fuel has 6.625 lbs/gal at 100 °F
+    // change 0.00325 lbs/gal per 1 °F
+    float fuelDensityJetA = temperatureFarenheit * -0.00325 + 6.95;
+
+    // density relation of LL100 (AVGAS) fuel:
+    // fuel has 6.490 lbs/gal at -100 °F
+    // fuel has 6.080 lbs/gal at 0 °F
+    // fuel has 5.670 lbs/gal at 100 °F
+    // change 0.0041 lbs/gal per 1 °F
+    float fuelDensityll100 = temperatureFarenheit * -0.0041 + 6.08;
+
+    if (flightModel.contains("jsb")) {
+        userAircraft.fuelFlowPPH = fuelFlowPPS * 3600;
+        userAircraft.fuelFlowGPH = fuelFlowPPS * 3600 * fuelDensityll100;
+    } else {
+        userAircraft.fuelFlowGPH = fuelFlowGPH0 + fuelFlowGPH1 + fuelFlowGPH2 + fuelFlowGPH3;
+        userAircraft.fuelFlowPPH = userAircraft.fuelFlowGPH * fuelDensityll100 ;
+    }
     // userAircraft.numberOfEngines
 
     userAircraft.ambientVisibilityMeter = ambientVisibilityMeter;
@@ -205,8 +232,13 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     // IN_CLOUD = 0x0002, - not available
     // IN_SNOW = 0x0008,  - not available
 
-    // userAircraft.flags |= atools::fs::sc::SIM_PAUSED;
-    // userAircraft.flags |= atools::fs::sc::SIM_REPLAY;
+    qDebug() << Q_FUNC_INFO << "Flight freeze: " << flightFreeze;
+    if (flightFreeze == "true") {
+        userAircraft.flags |= atools::fs::sc::SIM_PAUSED;
+    }
+    if (flightReplay == 1) {
+        userAircraft.flags |= atools::fs::sc::SIM_REPLAY;
+    }
 
     userAircraft.category = atools::fs::sc::AIRPLANE;
     // AIRPLANE, HELICOPTER, BOAT, GROUNDVEHICLE, CONTROLTOWER, SIMPLEOBJECT, VIEWER
