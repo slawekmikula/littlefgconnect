@@ -19,21 +19,23 @@
 #ifndef LITTLEFGCONNECT_CONSTANTS_H
 #define LITTLEFGCONNECT_CONSTANTS_H
 
-#include <QLatin1Literal>
+#include <QLatin1String>
 
 namespace lfgc {
 /* key names for atools::settings */
-const QLatin1Literal SETTINGS_OPTIONS_DEFAULT_PORT("Options/DefaultPort");
-const QLatin1Literal SETTINGS_OPTIONS_UPDATE_RATE("Options/UpdateRate");
-const QLatin1Literal SETTINGS_OPTIONS_RECONNECT_RATE("Options/ReconnectRate");
-const QLatin1Literal SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT("Options/FetchAiAircraft");
-const QLatin1Literal SETTINGS_OPTIONS_VERBOSE("Options/Verbose");
-const QLatin1Literal SETTINGS_OPTIONS_LANGUAGE("Options/Language");
+const QLatin1String SETTINGS_OPTIONS_DEFAULT_PORT("Options/DefaultPort");
+const QLatin1String SETTINGS_OPTIONS_UPDATE_RATE("Options/UpdateRate");
+const QLatin1String SETTINGS_OPTIONS_RECONNECT_RATE("Options/ReconnectRate");
+const QLatin1String SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT("Options/FetchAiAircraft");
+const QLatin1String SETTINGS_OPTIONS_MULTIPLAYER_SERVER_HOST("Options/MultiplayerServerHost");
+const QLatin1String SETTINGS_OPTIONS_MULTIPLAYER_SERVER_PORT("Options/MultiplayerServerPort");
+const QLatin1String SETTINGS_OPTIONS_VERBOSE("Options/Verbose");
+const QLatin1String SETTINGS_OPTIONS_LANGUAGE("Options/Language");
 
-const QLatin1Literal SETTINGS_MAINWINDOW_WIDGET("MainWindow/Widget");
+const QLatin1String SETTINGS_MAINWINDOW_WIDGET("MainWindow/Widget");
 
-const QLatin1Literal SETTINGS_ACTIONS_SHOW_PORT_CHANGE("Actions/ShowPortChange");
-const QLatin1Literal SETTINGS_ACTIONS_SHOW_QUIT("Actions/ShowQuit");
+const QLatin1String SETTINGS_ACTIONS_SHOW_PORT_CHANGE("Actions/ShowPortChange");
+const QLatin1String SETTINGS_ACTIONS_SHOW_QUIT("Actions/ShowQuit");
 
 } // namespace lfgc
 

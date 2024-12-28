@@ -40,7 +40,7 @@ XpConnect::~XpConnect()
   qDebug() << Q_FUNC_INFO;
 }
 
-bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectData& data, bool fetchAi)
+bool XpConnect::fillSimConnectData(QString simData, QString onlineStatus, atools::fs::sc::SimConnectData& data, bool fetchAi)
 {
     Q_UNUSED(fetchAi);
 
@@ -128,11 +128,24 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     QString flightModel = pieces.at(index++);
     //      flight freeze (pause)
     QString flightFreeze = pieces.at(index++);
+    //      flight replay (fgtape)
     int flightReplay = pieces.at(index++).toInt();
+    //      multiplayer online
+    QString multiplayerOnline = pieces.at(index++);
+    //      multiplayer server
+    QString multiplayerServer = pieces.at(index++);
+    //      ai objects combined
+    QString aiObjectsCombined = pieces.at(index++);
 
     atools::fs::sc::SimConnectUserAircraft& userAircraft = data.userAircraft;
 
+    // Reset user aircraft
+    userAircraft = atools::fs::sc::SimConnectUserAircraft();
+
     userAircraft.position = Pos(longitude, latitude, altitudeAboveGroundFt);
+
+    userAircraft.properties.addProp(atools::util::Prop(atools::fs::sc::PROP_XPCONNECT_VERSION, QCoreApplication::applicationVersion()));
+
     if(!userAircraft.position.isValid() || userAircraft.position.isNull()) {
       return false;
     }
@@ -149,7 +162,7 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     userAircraft.windSpeedKts = windSpeedKts;
     userAircraft.windDirectionDegT = windDirectionDegT;
     userAircraft.ambientTemperatureCelsius = ambientTemperatureCelsius;
-    userAircraft.totalAirTemperatureCelsius = ambientTemperatureCelsius; // FIXME
+    userAircraft.totalAirTemperatureCelsius = ambientTemperatureCelsius; // FIXME - use the same value ?
     userAircraft.seaLevelPressureMbar = seaLevelPressureInhg/0.029530f;
 
     // Ice
@@ -225,7 +238,7 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     // userAircraft.wingSpanFt
 
     // Set misc flags
-    userAircraft.flags = atools::fs::sc::IS_USER | atools::fs::sc::SIM_XPLANE; // FIXME
+    userAircraft.flags = atools::fs::sc::IS_USER | atools::fs::sc::SIM_XPLANE11; // FIXME - don't know if this is correct one
     if((int)altitudeAboveGroundFt == 0) {
       userAircraft.flags |= atools::fs::sc::ON_GROUND;
     }
@@ -234,7 +247,7 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
     // IN_CLOUD = 0x0002, - not available
     // IN_SNOW = 0x0008,  - not available
 
-    qDebug() << Q_FUNC_INFO << "Flight freeze: " << flightFreeze;
+
     if (flightFreeze == "true") {
         userAircraft.flags |= atools::fs::sc::SIM_PAUSED;
     }
@@ -247,6 +260,127 @@ bool XpConnect::fillSimConnectData(QString simData, atools::fs::sc::SimConnectDa
 
     userAircraft.engineType = atools::fs::sc::UNSUPPORTED;
     // PISTON = 0, JET = 1, NO_ENGINE = 2, HELO_TURBINE = 3, UNSUPPORTED = 4, TURBOPROP = 5
+
+    qDebug() << Q_FUNC_INFO << "Online: " << multiplayerOnline;
+    if (multiplayerOnline == "true") {
+        qDebug() << Q_FUNC_INFO << "Server: " << multiplayerServer;
+    }
+
+    if (fetchAi) {
+
+        data.aiAircraft.clear();
+        quint32 objId = 1;
+
+        // AI objects parser
+        qDebug() << Q_FUNC_INFO << "AI Objects: " << aiObjectsCombined;
+        if (aiObjectsCombined != "") {
+            QStringList aircrafts = aiObjectsCombined.split("|");
+            foreach(QString aircraft, aircrafts) {
+                if (aircraft == "") {
+                    continue;
+                }
+
+                QStringList aircraftItem = aircraft.split("^");
+
+                if (aircraftItem.size() != 6) {
+                    qDebug() << Q_FUNC_INFO << "ERROR: AI Object size not 6 items: " << aircraft;
+                    continue;
+                }
+
+                int index = 0;
+                QString callsign = aircraftItem.at(index++);
+                QString arrivalAirportId = aircraftItem.at(index++);
+                QString departureAirportId = aircraftItem.at(index++);
+                float altitudeFt = aircraftItem.at(index++).toFloat();
+                float latitudeDeg = aircraftItem.at(index++).toFloat();
+                float longitudeDeg = aircraftItem.at(index++).toFloat();
+
+                atools::fs::sc::SimConnectAircraft aiAircraft;
+                aiAircraft.airplaneFlightnumber = callsign;
+                aiAircraft.fromIdent = departureAirportId;
+                aiAircraft.toIdent = arrivalAirportId;
+                aiAircraft.flags = atools::fs::sc::SIM_XPLANE11;
+                aiAircraft.position = Pos(longitudeDeg, latitudeDeg, altitudeFt);
+
+                // Mark fields as unavailable
+                aiAircraft.headingTrueDeg = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.headingMagDeg = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.groundSpeedKts = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.indicatedAltitudeFt = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.indicatedSpeedKts = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.trueAirspeedKts = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.machSpeed = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.verticalSpeedFeetPerMin = atools::fs::sc::SC_INVALID_FLOAT;
+
+                aiAircraft.objectId = objId;
+                aiAircraft.category = atools::fs::sc::AIRPLANE;
+                aiAircraft.engineType = atools::fs::sc::UNSUPPORTED;
+
+                data.aiAircraft.append(aiAircraft);
+
+                objId++;
+            }
+        }
+
+        // Online objects parser
+        qDebug() << Q_FUNC_INFO << "Online Users: " << onlineStatus;
+        if (onlineStatus != "") {
+            QStringList strList = onlineStatus.split("\n",Qt::SkipEmptyParts);
+            for(int index = 1;index < strList.length();index++)
+            {
+                qDebug() << strList[index];
+                if (strList[index].startsWith("#")) {
+                    continue;
+                }
+
+                QStringList userData = strList[index].split(" ");
+                // "RER@mpserver01: 1034171.664623 -6222033.096334 1007853.793531 9.138567 -80.563069 32170.780096
+                // -1.734371 0.059653 0.326972 Aircraft/757-200/Models/757-200.xml"
+                qDebug() << "Online user data: " << userData;
+                // 0 callsign
+                QString callsign = userData[0].mid(0, userData[0].indexOf("@"));
+                // 4 - lat
+                float latitudeDeg = userData[4].toFloat();
+                // 5 - lon
+                float longitudeDeg = userData[5].toFloat();
+                // 6 - altitude
+                float altitudeFt = userData[6].toFloat();
+                // 10 - model
+                QString model = userData[10].split("/").last();
+                model = model.mid(0, model.indexOf(".xml"));
+
+                qDebug() << "callsign: " << callsign
+                         << " latitude: " << latitudeDeg
+                         << " longitude: " << longitudeDeg
+                         << " altitude: " << altitudeFt
+                         << " model: " << model;
+
+                atools::fs::sc::SimConnectAircraft aiAircraft;
+                aiAircraft.airplaneFlightnumber = callsign;
+                aiAircraft.flags = atools::fs::sc::SIM_XPLANE11;
+                aiAircraft.position = Pos(longitudeDeg, latitudeDeg, altitudeFt);
+
+                // Mark fields as unavailable
+                aiAircraft.headingTrueDeg = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.headingMagDeg = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.groundSpeedKts = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.indicatedAltitudeFt = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.indicatedSpeedKts = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.trueAirspeedKts = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.machSpeed = atools::fs::sc::SC_INVALID_FLOAT;
+                aiAircraft.verticalSpeedFeetPerMin = atools::fs::sc::SC_INVALID_FLOAT;
+
+                aiAircraft.objectId = objId;
+                aiAircraft.category = atools::fs::sc::AIRPLANE;
+                aiAircraft.engineType = atools::fs::sc::UNSUPPORTED;
+
+                data.aiAircraft.append(aiAircraft);
+
+                objId++;
+            }
+        }
+
+    }
 
     return true;
 }

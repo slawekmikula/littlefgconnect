@@ -41,6 +41,8 @@ public:
    * shared memory writer (writing in this thread's context) */
   void fetchAndWriteData(QString simData, bool fetchAi);
 
+  void writeOnlinePresenceData(QString onlineStatus);
+
   /* Send termination signal and wait for terminated */
   void terminateThread();
 
@@ -51,7 +53,7 @@ private:
   bool terminate = false;
   atools::fs::sc::SimConnectData data;
 
-  /* Syncronize SimConnectData access */
+  /* Synchronize SimConnectData access */
   QMutex dataMutex;
 
   /* Wakes thread up once new data has arrived */
@@ -62,6 +64,9 @@ private:
 
   /* Shared memory for local communication */
   QSharedMemory sharedMemory;
+
+  /* Online status list from multiplayer server */
+  QString onlineStatus;
 };
 
 #endif // SHAREDMEMORYWRITERTHREAD_H

@@ -18,6 +18,7 @@
 #ifndef LITTLEFGCONNECT_OPTIONSDIALOG_H
 #define LITTLEFGCONNECT_OPTIONSDIALOG_H
 
+#include <QString>
 #include <QDialog>
 
 namespace Ui {
@@ -36,10 +37,14 @@ public:
   int getPort() const;
   unsigned int getUpdateRate() const;
   bool isFetchAiAircraft() const;
+  QString getMultiplayerServerHost() const;
+  int getMultiplayerServerPort() const;
 
   void setPort(int port);
   void setUpdateRate(unsigned int ms);
   void setFetchAiAircraft(bool value);
+  void setMultiplayerServerHost(QString host);
+  void setMultiplayerServerPort(int port);
 
 private:
   Ui::OptionsDialog *ui;

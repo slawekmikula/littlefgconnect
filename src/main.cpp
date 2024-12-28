@@ -22,7 +22,6 @@
 #include "settings/settings.h"
 #include "fs/sc/simconnectdata.h"
 #include "fs/sc/simconnectreply.h"
-#include "fs/ns/navservercommon.h"
 #include "gui/application.h"
 #include "gui/translator.h"
 #include "constants.h"
@@ -55,19 +54,19 @@ int main(int argc, char *argv[])
 
   using atools::gui::Application;
   Application app(argc, argv);
-  Application::setWindowIcon(QIcon(":/littlefgconnect/resources/icons/navconnect.svg")); // FIXME
+  Application::setWindowIcon(QIcon(":/littlefgconnect/resources/icons/navconnect.svg"));
   Application::setApplicationName("Little Fgconnect");
   Application::setOrganizationName("ABarthel");
   Application::setOrganizationDomain("littlenavmap.org");
 
-  Application::setApplicationVersion("2.7.0.develop"); // VERSION_NUMBER - Little Fgconnect
+  Application::setApplicationVersion("1.2.1");
   Application::setEmailAddresses({"alex@littlenavmap.org", "slawek.mikula@gmail.com"});
 
   // Initialize logging and force logfiles into the system or user temp directory
   LoggingHandler::initializeForTemp(atools::settings::Settings::getOverloadedPath(
                                       ":/littlefgconnect/resources/config/logging.cfg"));
 
-  Application::addReportPath(QObject::tr("Log files:"), LoggingHandler::getLogFiles());
+  Application::addReportPath(QObject::tr("Log files:"), LoggingHandler::getLogFiles(false));
   Application::addReportPath(QObject::tr("Configuration:"), {Settings::getFilename()});
 
   // Print some information which can be useful for debugging
@@ -82,7 +81,7 @@ int main(int argc, char *argv[])
 
   qInfo() << "Available styles" << QStyleFactory::keys();
 
-  Settings::logSettingsInformation();
+  //Settings::logSettingsInformation();
 
   // Load local and Qt system translations from various places
   Translator::load(Settings::instance().valueStr(lfgc::SETTINGS_OPTIONS_LANGUAGE, QString()));

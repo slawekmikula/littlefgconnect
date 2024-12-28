@@ -20,6 +20,7 @@
 #define LITTLEFGCONNECT_MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTcpSocket>
 #include <QUdpSocket>
 
 #include "sharedmemorywriter.h"
@@ -68,6 +69,9 @@ signals:
 
 private slots:
   void readPendingDatagrams();
+  void tcpSocketConnected();
+  void tcpSocketDisconnected();
+  void tcpSocketReadyRead();
 
 private:
   /* Loggin handler will send log messages of category gui to this method which will emit
@@ -92,6 +96,7 @@ private:
   void showOfflineHelp();
 
   void startStopConnection();
+  void initOnlineTcpConnection();
 
   Ui::MainWindow *ui = nullptr;
 
@@ -103,9 +108,15 @@ private:
   QUdpSocket* udpSocket = nullptr;
   SharedMemoryWriter *thread = nullptr;
 
+  // FlightGear online server communication
+  bool onlineFetchEnabled = false;
+  QString onlineStatus = QString();
+  QTcpSocket* onlineTcpSocket = nullptr;
+
   atools::gui::HelpHandler *helpHandler = nullptr;
   bool firstStart = true; // Used to emit the first windowShown signal
   bool verbose = false;
+  bool fetchAi = false;
 
   QString supportedLanguageOnlineHelp;
   QString aboutMessage;

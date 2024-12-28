@@ -31,7 +31,6 @@
 #include "fs/sc/simconnectreply.h"
 #include "fs/sc/datareaderthread.h"
 #include "constants.h"
-#include "fs/sc/simconnecthandler.h"
 #include "fs/sc/xpconnecthandler.h"
 
 #include <QMessageBox>
@@ -40,6 +39,7 @@
 #include <QActionGroup>
 #include <QDir>
 #include <QRegularExpression>
+#include <QTimer>
 
 using atools::settings::Settings;
 using atools::fs::sc::SimConnectData;
@@ -158,7 +158,7 @@ void MainWindow::showOnlineHelp()
 
 void MainWindow::showOfflineHelp()
 {
-  HelpHandler::openFile(this, HelpHandler::getHelpFile(HELP_OFFLINE_FILE, "en" /* override */));
+  HelpHandler::openHelpUrlFile(this, HelpHandler::getHelpFile(HELP_OFFLINE_FILE, "en" /* override */), "en");
 }
 
 void MainWindow::options()
@@ -169,10 +169,14 @@ void MainWindow::options()
   unsigned int updateRateMs = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_UPDATE_RATE, 500).toUInt();
   int port = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_DEFAULT_PORT, 7755).toInt();
   bool fetchAiAircraft = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, true).toBool();
+  QString multiplayerServerHost = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_MULTIPLAYER_SERVER_HOST, "mpserver03.flightgear.org").toString();
+  int multiplayerServerPort = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_MULTIPLAYER_SERVER_PORT, 5001).toInt();
 
   dialog.setUpdateRate(updateRateMs);
   dialog.setPort(port);
   dialog.setFetchAiAircraft(fetchAiAircraft);
+  dialog.setMultiplayerServerHost(multiplayerServerHost);
+  dialog.setMultiplayerServerPort(multiplayerServerPort);
 
   int result = dialog.exec();
 
@@ -181,6 +185,8 @@ void MainWindow::options()
     settings.setValue(lfgc::SETTINGS_OPTIONS_UPDATE_RATE, static_cast<int>(dialog.getUpdateRate()));
     settings.setValue(lfgc::SETTINGS_OPTIONS_DEFAULT_PORT, dialog.getPort());
     settings.setValue(lfgc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, dialog.isFetchAiAircraft());
+    settings.setValue(lfgc::SETTINGS_OPTIONS_MULTIPLAYER_SERVER_HOST, dialog.getMultiplayerServerHost());
+    settings.setValue(lfgc::SETTINGS_OPTIONS_MULTIPLAYER_SERVER_PORT, dialog.getMultiplayerServerPort());
 
     settings.syncSettings();
 
@@ -277,9 +283,16 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::startStopConnection()
 {
+    Settings& settings = Settings::instance();
+    int port = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_DEFAULT_PORT, 7755).toInt();
+    bool fetchAiAircraft = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_FETCH_AI_AIRCRAFT, true).toBool();
+
+    // set main flag
+    this->fetchAi = fetchAiAircraft;
+
     if(udpSocket == nullptr) {
       udpSocket = new QUdpSocket(this);
-      if (!udpSocket->bind(7755)) {
+      if (!udpSocket->bind(port)) {
         qWarning() << Q_FUNC_INFO << "Cannot open UDP port";
         udpSocket = nullptr;
       } else {
@@ -289,20 +302,38 @@ void MainWindow::startStopConnection()
         thread = new SharedMemoryWriter();
         thread->start();
 
+        if (fetchAiAircraft) {
+
+            onlineTcpSocket = new QTcpSocket(this);
+            connect(onlineTcpSocket, SIGNAL(readyRead()),this, SLOT(tcpSocketReadyRead()));
+            connect(onlineTcpSocket, SIGNAL(connected()),this, SLOT(tcpSocketConnected()));
+            connect(onlineTcpSocket, SIGNAL(disconnected()),this, SLOT(tcpSocketDisconnected()));
+
+            initOnlineTcpConnection();
+        }
+
         qInfo(atools::fs::ns::gui).noquote().nospace() << "Started FlightGear connection slot. Waiting for FlightGear data.";
       }
     } else {
       if (udpSocket->state() == udpSocket->BoundState) {
 
-        qDebug() << Q_FUNC_INFO << "Closing connection";
+        qDebug() << Q_FUNC_INFO << "Closing connection thread";
         thread->terminateThread();
         delete thread;
         thread = nullptr;
 
-        qDebug() << Q_FUNC_INFO << "Closing connection";
+        qDebug() << Q_FUNC_INFO << "Closing UDP connection";
         udpSocket->close();
         delete udpSocket;
         udpSocket = nullptr;
+
+        if (fetchAiAircraft) {
+            qDebug() << Q_FUNC_INFO << "Closing Online Presence TCP Connection";
+            onlineTcpSocket->abort();
+            onlineTcpSocket->close();
+            delete onlineTcpSocket;
+            onlineTcpSocket = nullptr;
+        }
 
         qInfo(atools::fs::ns::gui).noquote().nospace() << "Closed FlightGear connection slot.";
       }
@@ -331,8 +362,48 @@ void MainWindow::readPendingDatagrams()
         QString dataAsString = QString(rxData);
 
         // Copy data from datarefs and pass it over to the thread for writing into the shared memory
-        thread->fetchAndWriteData(dataAsString, false);
+        thread->fetchAndWriteData(dataAsString, this->fetchAi);
     }
+}
+
+void MainWindow::tcpSocketReadyRead()
+{
+    qDebug() << "reading...";
+    onlineStatus += onlineTcpSocket->readAll();
+}
+
+void MainWindow::tcpSocketConnected()
+{
+    qDebug() << "connected...";
+    onlineStatus = QString("");
+}
+
+void MainWindow::initOnlineTcpConnection()
+{
+    Settings& settings = Settings::instance();
+    QString multiplayerServerHost = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_MULTIPLAYER_SERVER_HOST, "").toString();
+    int multiplayerServerPort = settings.getAndStoreValue(lfgc::SETTINGS_OPTIONS_MULTIPLAYER_SERVER_PORT, 5001).toInt();
+
+    onlineTcpSocket->connectToHost(multiplayerServerHost, multiplayerServerPort);
+    // we need to wait...
+    if(!onlineTcpSocket->waitForConnected(5000))
+    {
+        qDebug() << "Error: " << onlineTcpSocket->errorString();
+    }
+}
+
+void MainWindow::tcpSocketDisconnected()
+{
+    qDebug() << "Disconnected...";
+    qDebug() << "Online status: " << onlineStatus;
+
+    thread->writeOnlinePresenceData(onlineStatus);
+
+    // re-run connection after 5 seconds
+    QTimer* timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer, &QTimer::timeout, this, &MainWindow::initOnlineTcpConnection);
+    timer->start(5000);
 }
 
 void MainWindow::mainWindowShown()

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>349</width>
-    <height>162</height>
+    <width>428</width>
+    <height>186</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,28 +16,7 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="1">
-      <widget class="QSpinBox" name="spinBoxOptionsPort">
-       <property name="toolTip">
-        <string>This can normally be left at default.
-Change this value only if another application occupies this port and 
-you get an error message like &quot;The bound address is already in use&quot;.</string>
-       </property>
-       <property name="statusTip">
-        <string>This can normally be left at default.\nChange this value only if another application occupies this port and \nyou get an error message like &quot;The bound address is already in use&quot;.</string>
-       </property>
-       <property name="minimum">
-        <number>1024</number>
-       </property>
-       <property name="maximum">
-        <number>65535</number>
-       </property>
-       <property name="value">
-        <number>7755</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
+     <item row="2" column="1">
       <widget class="QSpinBox" name="spinBoxOptionsUpdateRate">
        <property name="toolTip">
         <string>Allowed range is 50 milliseconds up to 2 seconds. 
@@ -63,20 +42,7 @@ Little Navconnect fetches data from Flight Simulator and sends it to all clients
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="labelOptionsUpdateRate">
-       <property name="text">
-        <string>&amp;Update Time Interval:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-       <property name="buddy">
-        <cstring>spinBoxOptionsUpdateRate</cstring>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="labelOptionsPort">
        <property name="text">
         <string>&amp;Network Port:</string>
@@ -89,10 +55,10 @@ Little Navconnect fetches data from Flight Simulator and sends it to all clients
        </property>
       </widget>
      </item>
-     <item row="2" column="0" colspan="2">
+     <item row="4" column="0">
       <widget class="QCheckBox" name="checkBoxFetchAiAircraft">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="toolTip">
         <string>Deselect to disable fetching and transmission of AI or multiplayer aircraft</string>
@@ -105,6 +71,83 @@ Little Navconnect fetches data from Flight Simulator and sends it to all clients
        </property>
        <property name="checked">
         <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="spinBoxOptionsPort">
+       <property name="toolTip">
+        <string>This can normally be left at default.
+Change this value only if another application occupies this port and 
+you get an error message like &quot;The bound address is already in use&quot;.</string>
+       </property>
+       <property name="statusTip">
+        <string>This can normally be left at default.\nChange this value only if another application occupies this port and \nyou get an error message like &quot;The bound address is already in use&quot;.</string>
+       </property>
+       <property name="minimum">
+        <number>1024</number>
+       </property>
+       <property name="maximum">
+        <number>65535</number>
+       </property>
+       <property name="value">
+        <number>7755</number>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Multiplayer server port:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QSpinBox" name="spinBoxMultiplayerServerPort">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="maximum">
+        <number>65535</number>
+       </property>
+       <property name="value">
+        <number>5001</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="labelOptionsUpdateRate">
+       <property name="text">
+        <string>&amp;Update Time Interval:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="buddy">
+        <cstring>spinBoxOptionsUpdateRate</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="labelMultiplayerServerHost">
+       <property name="text">
+        <string>Multiplayer server:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="textLineMultiplayerServerHost">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>mpserver03.flightgear.org</string>
        </property>
       </widget>
      </item>

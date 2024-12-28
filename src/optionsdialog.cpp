@@ -49,6 +49,16 @@ bool OptionsDialog::isFetchAiAircraft() const
   return ui->checkBoxFetchAiAircraft->isChecked();
 }
 
+int OptionsDialog::getMultiplayerServerPort() const
+{
+    return ui->spinBoxMultiplayerServerPort->value();
+}
+
+QString OptionsDialog::getMultiplayerServerHost() const
+{
+    return ui->textLineMultiplayerServerHost->text();
+}
+
 void OptionsDialog::setFetchAiAircraft(bool value)
 {
   ui->checkBoxFetchAiAircraft->setChecked(value);
@@ -63,3 +73,14 @@ void OptionsDialog::setUpdateRate(unsigned int ms)
 {
   ui->spinBoxOptionsUpdateRate->setValue(static_cast<int>(ms));
 }
+
+void OptionsDialog::setMultiplayerServerHost(QString host)
+{
+    ui->textLineMultiplayerServerHost->setText(host);
+}
+
+void OptionsDialog::setMultiplayerServerPort(int port)
+{
+    ui->spinBoxMultiplayerServerPort->setValue(port);
+}
+

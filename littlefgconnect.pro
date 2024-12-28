@@ -308,3 +308,12 @@ all.depends = copydata
 deploy.depends = all
 
 QMAKE_EXTRA_TARGETS += deploy copydata all
+
+#FIXME - add cpptrace library (use variables)
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libs/cpptrace/release/lib/release/ -lcpptrace -ldwarf -lzstd -lz
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libs/cpptrace/release/lib/debug/ -lcpptrace -ldwarf -lzstd -lz
+else:unix: LIBS += -L$$PWD/../libs/cpptrace/release/lib/ -lcpptrace -ldwarf -lzstd -lz
+
+INCLUDEPATH += $$PWD/../libs/cpptrace/release/include
+DEPENDPATH += $$PWD/../libs/cpptrace/release/include

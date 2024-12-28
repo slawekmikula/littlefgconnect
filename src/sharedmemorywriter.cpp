@@ -39,12 +39,17 @@ void SharedMemoryWriter::fetchAndWriteData(QString simData, bool fetchAi)
 {
   {
     QMutexLocker locker(&dataMutex);
-    if(!fgConnect->fillSimConnectData(simData, data, fetchAi)) {
+    if(!fgConnect->fillSimConnectData(simData, onlineStatus, data, fetchAi)) {
       data = atools::fs::sc::EMPTY_SIMCONNECT_DATA;
     }
   }
 
   waitCondition.wakeAll();
+}
+
+void SharedMemoryWriter::writeOnlinePresenceData(QString onlineStatus)
+{
+    this->onlineStatus = onlineStatus;
 }
 
 void SharedMemoryWriter::terminateThread()
